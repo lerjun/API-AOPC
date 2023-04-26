@@ -193,6 +193,7 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
+        
         [HttpGet]
         public async Task<IActionResult> GetCallToActionsList()
         {
@@ -351,7 +352,8 @@ namespace AuthSystem.Data.Controller
             {
 
                 string sql = $@"SELECT     Count(*)as count, Actions,Business,Module,tbl_audittrailModel.DateCreated
-                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
+                        "GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
                 DataTable dt = db.SelectDb(sql).Tables[0];
                 if (dt.Rows.Count > 0)
                 {
