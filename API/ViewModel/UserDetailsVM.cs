@@ -37,6 +37,7 @@ namespace AuthSystem.ViewModel
         public string EmployeeID { get; set; }
         public string MembershipNumber { get; set; }
         public string CorpCno { get; set; }
+        public string AllowEmailNotif { get; set; }
 
     }
 }

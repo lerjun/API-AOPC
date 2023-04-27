@@ -391,7 +391,6 @@ namespace AuthSystem.Data.Controller
                 }
                 else
                 {
-                    
                     string query = $@"Update  UsersModel set AllowEmailNotif = '"+data.AllowNotif+"' where  Email='" + data.Email + "'";
                     db.AUIDB_WithParam(query);
                     return Ok("Success");
@@ -404,6 +403,8 @@ namespace AuthSystem.Data.Controller
             }
 
         }
+
+      
         [HttpPost]
         public async Task<IActionResult> DeleteToken(JWTokenModel data)
         {
@@ -628,6 +629,7 @@ namespace AuthSystem.Data.Controller
                 item.ProfileImgPath = dr["ProfileImgPath"].ToString();
                 item.MembershipNumber = dr["MembershipNumber"].ToString();
                 item.CorpCno = dr["CorpCno"].ToString();
+                item.AllowEmailNotif = dr["AllowEmailNotif"].ToString();
 
             }
                 return Ok(item);

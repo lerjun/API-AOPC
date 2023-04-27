@@ -46,5 +46,6 @@ namespace AuthSystem.ViewModel
         public string Title { get; set; }
         public string Address { get; set; }
         public string FilePath { get; set; }
+        public string AllowNotif { get; set; }
     }
 }

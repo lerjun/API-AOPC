@@ -26,7 +26,7 @@ using static AuthSystem.Data.Controller.ApiAuditTrailController;
 namespace AuthSystem.Data.Controller
 {
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize("ApiKey")]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class ApiNotifcationController : ControllerBase
@@ -48,28 +48,59 @@ namespace AuthSystem.Data.Controller
    
         }
 
-       
+       // for CMS
         [HttpPost]
         public async Task<IActionResult> InsertNotifications(NotificationInsertModel data)
         {
             var result = new Registerstats();
             try
             {
-                string sql = $@"SELECT  * from UsersModel where EmployeeID='" + data.EmployeeID + "'";
-                DataTable dt = db.SelectDb(sql).Tables[0];
-                if (dt.Rows.Count != 0)
+                string sql0 = "";
+                string itemid = "";
+                string modulename = data.Module == "Vendor" ? "Vendor" : "Offering";
+                if(modulename== "Offering")
                 {
-                    string Insert = $@"insert into tbl_NotificationModel (EmployeeID,Details,isRead) values ('" + data.EmployeeID + "','" + data.Details + "','" + data.isRead + "') ";
-                    db.AUIDB_WithParam(Insert);
-                    result.Status = "New Notifications Added";
-                    return Ok(result);
+                    sql0 = $@"SELECT TOP (1) OfferingID FROM tbl_OfferingModel order by id desc";
+                    DataTable dt2 = db.SelectDb(sql0).Tables[0];
+                    itemid = dt2.Rows[0]["OfferingID"].ToString();
+
                 }
                 else
                 {
-                    result.Status = "Error";
-                    return BadRequest(result);
-
+                    sql0 = $@"SELECT TOP (1) VendorID FROM tbl_VendorModel order by id desc";
+                    DataTable dt2 = db.SelectDb(sql0).Tables[0];
+                    itemid = dt2.Rows[0]["VendorID"].ToString();
                 }
+             
+
+
+                string sql1 = $@"SELECT EmployeeID  FROM UsersModel WHERE active=1";
+                    DataTable table = db.SelectDb(sql1).Tables[0];
+                foreach (DataRow dr in table.Rows)
+                {
+                    string sql = $@"SELECT  * from UsersModel where EmployeeID='" + dr["EmployeeID"].ToString() + "'";
+                    DataTable dt = db.SelectDb(sql).Tables[0];
+                    if (dt.Rows.Count != 0)
+                    {
+                        string Insert = $@"insert into tbl_NotificationModel (EmployeeID,Details,isRead,Module,ItemID,EmailStatus,DateCreated) values
+                        ('" + dr["EmployeeID"].ToString() + "','" + data.Details + "','" + data.isRead + "','" + modulename + "','" + itemid + "','" + data.EmailStatus + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "') ";
+                        db.AUIDB_WithParam(Insert);
+
+
+
+
+                    }
+                
+                    else
+                    {
+                        result.Status = "Error";
+                        return BadRequest(result);
+
+                    }
+            }
+                    result.Status = "New Notifications Added";
+                    return Ok(result);
+              
             }
 
             catch (Exception ex)
@@ -80,9 +111,9 @@ namespace AuthSystem.Data.Controller
         [HttpPost]
         public async Task<IActionResult> GetNotifEmpId(NotifId data)
         {
-            string sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated
+            string sql = $@"SELECT        Id, EmployeeID, Details, isRead,DateCreated,Module,ItemID,EmailStatus
                             FROM            tbl_NotificationModel
-                            WHERE        (EmployeeID = '"+data.EmployeeID + "') order by id desc";
+                            WHERE        (EmployeeID = '" +data.EmployeeID + "') order by id desc";
             var result = new List<NotificationModel>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
@@ -93,6 +124,9 @@ namespace AuthSystem.Data.Controller
                 item.Details = dr["Details"].ToString();
                 item.isRead = dr["isRead"].ToString();
                 item.DateCreated = dr["DateCreated"].ToString();
+                item.Module = dr["Module"].ToString();
+                item.ItemID = dr["ItemID"].ToString();
+                item.EmailStatus = dr["EmailStatus"].ToString();
                 result.Add(item);
             }
             return Ok(result);
@@ -101,7 +135,8 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> NotificationList()
         {
             GlobalVariables gv = new GlobalVariables();
-            string sql = $@"SELECT        TOP (200) tbl_NotificationModel.Details, tbl_NotificationModel.isRead, tbl_NotificationModel.DateCreated, Concat(UsersModel.Fname,' ', UsersModel.Lname) as Fullname, tbl_NotificationModel.Id, tbl_NotificationModel.EmployeeID
+            string sql = $@"SELECT        tbl_NotificationModel.Details, tbl_NotificationModel.isRead, tbl_NotificationModel.DateCreated,Concat(UsersModel.Fname,' ', UsersModel.Lname) as Fullname, tbl_NotificationModel.Id, tbl_NotificationModel.EmployeeID, tbl_NotificationModel.Module, tbl_NotificationModel.ItemID, 
+                         tbl_NotificationModel.EmailStatus
                          FROM            tbl_NotificationModel INNER JOIN
                          UsersModel ON tbl_NotificationModel.EmployeeID = UsersModel.EmployeeID";
             var result = new List<NotificationVM>();
@@ -116,6 +151,9 @@ namespace AuthSystem.Data.Controller
                 item.EmployeeID = dr["EmployeeID"].ToString();
                 item.Fullname = dr["Fullname"].ToString();
                 item.Details = dr["Details"].ToString();
+                item.Module = dr["Module"].ToString();
+                item.ItemID = dr["ItemID"].ToString();
+                item.EmailStatus = dr["EmailStatus"].ToString();
                 item.isRead = read;
                 item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
 
@@ -133,6 +171,9 @@ namespace AuthSystem.Data.Controller
             public string? Details { get; set; }
             public string? isRead { get; set; }
             public string? DateCreated { get; set; }
+            public string? Module { get; set; }
+            public string? ItemID { get; set; }
+            public string? EmailStatus { get; set; }
 
         }   
         public class NotificationVM
@@ -144,6 +185,9 @@ namespace AuthSystem.Data.Controller
             public string? Fullname { get; set; }
             public string? isRead { get; set; }
             public string? DateCreated { get; set; }
+            public string? Module { get; set; }
+            public string? ItemID { get; set; }
+            public string? EmailStatus { get; set; }
 
         }
 
@@ -153,7 +197,11 @@ namespace AuthSystem.Data.Controller
             public string? Id { get; set; }
             public string? EmployeeID { get; set; }
             public string? Details { get; set; }
+            public string? Module { get; set; }
+            public string? ItemID { get; set; }
             public int? isRead { get; set; }
+            public int? EmailStatus { get; set; }
+
 
         }
         public class NotifId

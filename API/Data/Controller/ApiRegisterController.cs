@@ -51,18 +51,31 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
    
         }
-      
-        [HttpGet]
-        public async Task<IActionResult> UserInfoList()
+        public class Emails
+        {
+            public string? Email { get; set; }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> UserInfoList(Emails data)
         {
             GlobalVariables gv = new GlobalVariables();
 
             var result = new List<UserVM>();
-            DataTable table = db.SelectDb_SP("SP_UserInfo").Tables[0];
-
+            string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
+                         tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, 
+                         UsersModel.AllowEmailNotif
+                        FROM            UsersModel INNER JOIN
+                                                 tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id INNER JOIN
+                                                 tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id INNER JOIN
+                                                 tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id INNER JOIN
+                                                 tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
+                        WHERE        (UsersModel.Active IN (1, 2, 9)) and Email='"+data.Email+"'";
+            DataTable table = db.SelectDb(sql).Tables[0];
+            var item = new UserVM();
             foreach (DataRow dr in table.Rows)
             {
-                var item = new UserVM();
+               
                 item.Id = int.Parse(dr["id"].ToString());
                 item.Fullname = dr["Fname"].ToString()+" " + dr["Lname"].ToString();
                 item.Username = dr["Username"].ToString();
@@ -78,11 +91,11 @@ namespace AuthSystem.Data.Controller
                 item.CorporateID = dr["CorporateID"].ToString();
                 item.PositionID = dr["PositionID"].ToString();
                 item.status = dr["status"].ToString();
+                item.AllowNotif = dr["AllowEmailNotif"].ToString();
 
-                result.Add(item);
             }
 
-            return Ok(result);
+            return Ok(item);
         }
         [HttpGet]
         public async Task<IActionResult> Corporatelist()
