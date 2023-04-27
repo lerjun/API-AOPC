@@ -21,6 +21,9 @@ using System.Web.Http.Results;
 using MimeKit;
 using MailKit.Net.Smtp;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using static AuthSystem.Data.Controller.ApiUserAcessController;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AuthSystem.Data.Controller
 {
@@ -56,6 +59,11 @@ namespace AuthSystem.Data.Controller
         public class StatusResult
         {
             public string Status { get; set; }
+
+        }     
+        public class ExpiryRes
+        {
+            public string expiryDate { get; set; }
 
         }
         [HttpPost]
@@ -93,8 +101,8 @@ namespace AuthSystem.Data.Controller
                 DateTime expirydate = DateTime.Now.AddDays(1);
                 var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(data.Email);
                 string email= System.Convert.ToBase64String(plainTextBytes);
-                query = $@"insert into tbl_TokenModel (Token,ExpiryDate,Status) values ('"+ email + "','"+expirydate.ToString("yyyy-MM-dd HH:mm:ss")+"','5')";
-       
+                query = $@"insert into tbl_TokenModel (Token,ExpiryDate,Status,DateCreated) values ('" + email + "','"+expirydate.ToString("yyyy-MM-dd HH:mm:ss")+"','5','"+DateTime.Now.ToString("yyyy-MM-dd")+"')";
+                
                 db.AUIDB_WithParam(query);
                 var emailsend = "https://www.alfardanoysterprivilegeclub.com/change-password/" + email;
                 var message = new MimeMessage();
@@ -104,52 +112,52 @@ namespace AuthSystem.Data.Controller
                 var bodyBuilder = new BodyBuilder();
                 string img = "../img/AOPCBlack.jpg";
                 bodyBuilder.HtmlBody = @"<!DOCTYPE html>
-<html lang=""en"">
-<head>
-    <meta charset=""UTF-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <meta http-equiv=""X-UA-Compatible"" content=""ie=edge"">
-    <title>Oyster Privilege Club</title>
-</head>
-<style>
-    @font-face {
-    font-family: 'Montserrat-Reg';
-    src: 
-    url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-Regular.ttf');
-    }
-    @font-face {
-        font-family: 'Montserrat-SemiBold';
-        src: url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-SemiBold.ttf');
-    }
-    body{
-        display: flex;
-        flex-direction: column;
-        font-family: 'Montserrat-Reg';
-    }
-    .img-container {
-        width: 200px;
-        margin:0 auto;
-    }
-    h3{
-        width: 400px;
-        text-align: center;
-        margin:20px auto;
-    }
-    p{
-        width: 400px;
-        margin:10px auto;
-    }
-</style>
-<body>
-    <div class=""img-container"">
-        <img width=""100%"" src=""https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC-low-black.png"" alt="""">
-    </div>
-    <h3>Reset Password</h3>
-    <p>We received a request to reset the password for your account. If you did not initiate this request, please ignore this email.</p>
-    <p>To reset your password, please click the following link:<a href="+emailsend+">"+emailsend+"</a>. This link will be valid for the next 24 hours.</p>" +
-    "<p>If you have any issues with resetting your password or need further assistance, please contact our support team at <b>app@alfaran.com.qa</b>.</p>" +
-"</body> "+
-"</html>";
+                <html lang=""en"">
+                <head>
+                    <meta charset=""UTF-8"">
+                    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                    <meta http-equiv=""X-UA-Compatible"" content=""ie=edge"">
+                    <title>Oyster Privilege Club</title>
+                </head>
+                <style>
+                    @font-face {
+                    font-family: 'Montserrat-Reg';
+                    src: 
+                    url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-Regular.ttf');
+                    }
+                    @font-face {
+                        font-family: 'Montserrat-SemiBold';
+                        src: url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-SemiBold.ttf');
+                    }
+                    body{
+                        display: flex;
+                        flex-direction: column;
+                        font-family: 'Montserrat-Reg';
+                    }
+                    .img-container {
+                        width: 200px;
+                        margin:0 auto;
+                    }
+                    h3{
+                        width: 400px;
+                        text-align: center;
+                        margin:20px auto;
+                    }
+                    p{
+                        width: 400px;
+                        margin:10px auto;
+                    }
+                </style>
+                <body>
+                    <div class=""img-container"">
+                        <img width=""100%"" src=""https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC-low-black.png"" alt="""">
+                    </div>
+                    <h3>Reset Password</h3>
+                    <p>We received a request to reset the password for your account. If you did not initiate this request, please ignore this email.</p>
+                    <p>To reset your password, please click the following link:<a href="+emailsend+">"+emailsend+"</a>. This link will be valid for the next 24 hours.</p>" +
+                    "<p>If you have any issues with resetting your password or need further assistance, please contact our support team at <b>app@alfaran.com.qa</b>.</p>" +
+                "</body> "+
+                "</html>";
                 message.Body = bodyBuilder.ToMessageBody();
                 using (var client = new SmtpClient())
                 {
@@ -332,7 +340,99 @@ namespace AuthSystem.Data.Controller
                 result.Status = "Error";
                 return BadRequest(result);
             }
-            return Ok(result);
+           
+        }
+        [HttpPost]
+        public async Task<IActionResult> GetKeyExpiry(JWTokenModel data)
+        {
+            var result = new ExpiryRes();
+            try
+            {
+                string sql = $@"select  Token,expiryDate from tbl_TokenModel where Token='" + data.Email + "'";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                if (dt.Rows.Count == 0)
+                {
+                    result.expiryDate = "Error!";
+                    return BadRequest();
+                }
+                else
+                {
+                    result.expiryDate = dt.Rows[0]["ExpiryDate"].ToString();
+                    return Ok(result);
+
+                }
+            }
+
+            catch (Exception ex)
+            {
+                result.expiryDate = "Error";
+                return BadRequest(result);
+            }
+
+        }
+        public class NotifStats
+        {
+            public int? AllowNotif { get; set; }
+            public string? Email { get; set; }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> PostAllowNotif(NotifStats data)
+        {
+            var result = new ExpiryRes();
+            try
+            {
+                string sql = $@"select  * from UsersModel  where   Email='" + data.Email + "'";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                if (dt.Rows.Count == 0)
+                {
+                
+                    return BadRequest("Error!");
+                }
+                else
+                {
+                    
+                    string query = $@"Update  UsersModel set AllowEmailNotif = '"+data.AllowNotif+"' where  Email='" + data.Email + "'";
+                    db.AUIDB_WithParam(query);
+                    return Ok("Success");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest("Error!");
+            }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteToken(JWTokenModel data)
+        {
+            var result = new StatusResult();
+            try
+            {
+                string sql = $@"select  Token,ExpiryDate from tbl_TokenModel where Token='" + data.Email + "'";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                if (dt.Rows.Count == 0)
+                {
+                    result.Status = "Error!";
+                    return BadRequest();
+                }
+                else
+                {
+                   string query = $@"delete  tbl_TokenModel where Token = '" + dt.Rows[0]["Token"].ToString() +"'";
+                    db.AUIDB_WithParam(query);
+                    result.Status = "Deleted";
+                    return Ok(result);
+
+                }
+            }
+
+            catch (Exception ex)
+            {
+                result.Status = "Error";
+                return BadRequest(result);
+            }
+
         }
         public class QrLogsModel
         {
