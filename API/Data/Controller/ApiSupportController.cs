@@ -27,6 +27,7 @@ using static AuthSystem.Data.Controller.ApiUserAcessController;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Diagnostics.Metrics;
 
 namespace AuthSystem.Data.Controller
 {
@@ -397,32 +398,66 @@ namespace AuthSystem.Data.Controller
         {
             int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
             int day = data.day == 1 ? daysLeft : data.day;
-
+            string datecreated = "";
+            int count_ = 0;
             try
             {
+                DateTime startDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd")).AddDays(-data.day);
 
-                string sql = $@"SELECT count(*) as count
-                         FROM  UsersModel
-                         WHERE DateCreated >= DATEADD(day,-" + day + ", GETDATE()) and active= 1";
-                DataTable dt = db.SelectDb(sql).Tables[0];
-                var item = new Usertotalcount();
-                if (dt.Rows.Count > 0)
+                DateTime endDate = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
+                List<DateTime> allDates = new List<DateTime>();
+                var result = new List<Usertotalcount>();
+                for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
                 {
-                    foreach (DataRow dr in dt.Rows)
+                    //allDates.Add(date.Date);
+                    var dategen = date.Date.ToString("yyyy-MM-dd");
+                  
+                    string sql1 = $@"select DateCreated,Count(*) as count from UsersModel where active = 1 and DateCreated='" + dategen + "' group by DateCreated order by  DateCreated ";
+                    DataTable dt1 = db.SelectDb(sql1).Tables[0];
+
+     
+                    if (dt1.Rows.Count == 0)
                     {
-
-                        item.count = int.Parse(dr["count"].ToString());
-
+                        datecreated = dategen;
+                        count_ = 0;
+                    }
+                    else
+                    {
+                        foreach (DataRow dr in dt1.Rows)
+                        {
+                            datecreated = dr["DateCreated"].ToString();
+                            count_ = int.Parse(dr["count"].ToString());
+                        }
                     }
 
-                    return Ok(item);
-                }
-                else
-                {
-                    return BadRequest("ERROR");
+                    string sql = $@"SELECT count(*) as count
+                         FROM  UsersModel
+                         WHERE DateCreated >= DATEADD(day,-" + day + ", GETDATE()) and active= 1";
+                    DataTable dt = db.SelectDb(sql).Tables[0];
+                    var item = new Usertotalcount();
+                    if (dt.Rows.Count > 0)
+                    {
+                        foreach (DataRow dr in dt.Rows)
+                        {
+
+                            item.count = int.Parse(dr["count"].ToString());
+                            item.Date = DateTime.Parse(datecreated).ToString("dd");
+                            item.graph_count = count_;
+                            result.Add(item);
+
+                        }
+
+                       
+                    }
+                    else
+                    {
+                        return BadRequest("ERROR");
+                    }
+
+                    
                 }
 
-
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -556,6 +591,8 @@ namespace AuthSystem.Data.Controller
         public class Usertotalcount
         {
             public int count { get; set; }
+            public int graph_count { get; set; }
+            public string Date { get; set; }
 
         }
         public class ClicCountModel

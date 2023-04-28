@@ -85,10 +85,6 @@ namespace AuthSystem.Data.Controller
                         string Insert = $@"insert into tbl_NotificationModel (EmployeeID,Details,isRead,Module,ItemID,EmailStatus,DateCreated) values
                         ('" + dr["EmployeeID"].ToString() + "','" + data.Details + "','" + data.isRead + "','" + modulename + "','" + itemid + "','" + data.EmailStatus + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "') ";
                         db.AUIDB_WithParam(Insert);
-
-
-
-
                     }
                 
                     else
@@ -130,6 +126,24 @@ namespace AuthSystem.Data.Controller
                 result.Add(item);
             }
             return Ok(result);
+        }
+        [HttpPost]
+        public async Task<IActionResult> UpdateNotification(NotifIdUpdate data)
+        {
+        
+            string sql = $@"SELECT * from  tbl_NotificationModel where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
+            DataTable table = db.SelectDb(sql).Tables[0];
+            if (table.Rows.Count != 0)
+            {
+                string Insert = $@" delete tbl_NotificationModel where id='" + data.id + "' and EmployeeID='" + data.EmployeeID + "'";
+                db.AUIDB_WithParam(Insert);
+                return Ok("Deleted");
+            }
+            else
+            {
+                return BadRequest("Error");
+            }
+
         }
         [HttpGet]
         public async Task<IActionResult> NotificationList()
@@ -206,6 +220,12 @@ namespace AuthSystem.Data.Controller
         }
         public class NotifId
         {
+            public string? EmployeeID { get; set; }
+
+        }
+        public class NotifIdUpdate
+        {
+            public int? id { get; set; }
             public string? EmployeeID { get; set; }
 
         }
