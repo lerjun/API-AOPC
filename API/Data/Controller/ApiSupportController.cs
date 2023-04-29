@@ -28,6 +28,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Diagnostics.Metrics;
+using System.Globalization;
+using Newtonsoft.Json;
 
 namespace AuthSystem.Data.Controller
 {
@@ -198,7 +200,6 @@ namespace AuthSystem.Data.Controller
         [HttpGet]
         public async Task<IActionResult> GetCallToActionsList()
         {
-            GlobalVariables gv = new GlobalVariables();
 
             string sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
                             FROM            (SELECT        Business, COUNT(*) AS Email
@@ -214,7 +215,7 @@ namespace AuthSystem.Data.Controller
                             WHERE        (Module = 'Book')
                             GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
                             (SELECT        Business, Module,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  and DateCreated >= DATEADD(day,-7, GETDATE())
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
                             GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<CallToActionsModel>();
@@ -236,7 +237,124 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
+        [HttpPost]
+        public async Task<IActionResult> PostCallToActionsList(UserFilterCatday data)
+        {
+            int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
+            int day = data.day == 1 ? daysLeft : data.day;
+            string sql = "";
+            try
+            {
+                if (data.day == 0 && data.category == "0")
+                {
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email
+                            FROM            tbl_audittrailModel
+                            WHERE        (Module = 'Mail')
+                            GROUP BY Business) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Call')
+                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Book
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Book')
+                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module,DateCreated
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
+                            GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
+                }
+                else if(data.day == 0 && data.category != "0" )
+                {
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email
+                            FROM            tbl_audittrailModel
+                            WHERE        (Module = 'Mail')
+                            GROUP BY Business) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Call')
+                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Book
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Book')
+                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module,DateCreated
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
+                            GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business where Category.Module = '" + data.category + "' order by Mail.Email desc ";
+                }
+                else if (data.day != 0 && data.category == "0" )
+                {
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email
+                            FROM            tbl_audittrailModel
+                            WHERE        (Module = 'Mail')
+                            GROUP BY Business) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Call')
+                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Book
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Book')
+                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module,DateCreated
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'   and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) "+
+                            "GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business  order by Mail.Email desc ";
+                }
+                else
+                {
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email
+                            FROM            tbl_audittrailModel
+                            WHERE        (Module = 'Mail')
+                            GROUP BY Business) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Call')
+                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Book
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                            WHERE        (Module = 'Book')
+                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module,DateCreated
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
+                                                "GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business where Category.Module = '" + data.category + "' order by Mail.Email desc ";
+                }
+                
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            var result = new List<CallToActionsModel>();
+            if (dt.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
 
+                    string call = dr["Call"].ToString() == "" ? "0" : dr["Call"].ToString();
+                    string book = dr["Book"].ToString() == "" ? "0" : dr["Book"].ToString();
+                    string cat = dr["Category"].ToString() == "" ? "" : dr["Category"].ToString() == "Food & Beverage" ? "Restaurant" : dr["Category"].ToString() == "Hotel" ? "Hotel" : "";
+                    string mail = dr["Email"].ToString() == "" ? "0" : dr["Email"].ToString();
+                    var item = new CallToActionsModel();
+                    item.Business = dr["Business"].ToString();
+                    item.Category = cat;
+                    item.EmailCount = int.Parse(mail.ToString());
+                    item.CallCount = int.Parse(call.ToString());
+                    item.BookCount = int.Parse(book.ToString());
+                    result.Add(item);
+                }
+
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest("ERROR");
+            }
+        }
+
+            catch (Exception ex)
+            {
+                return BadRequest("ERROR");
+    }
+}
         [HttpGet]
         public async Task<IActionResult> GetCountAllUserlist()
         {
@@ -258,7 +376,15 @@ namespace AuthSystem.Data.Controller
         [HttpGet]
         public async Task<IActionResult> GetNewRegisteredWeekly()
         {
-            GlobalVariables gv = new GlobalVariables();
+            int total = 0;
+            string sqls = $@"select Count(*) as count from UsersModel where active=1";
+            DataTable dts = db.SelectDb(sqls).Tables[0];
+
+            foreach (DataRow dr in dts.Rows)
+            {
+                total = int.Parse(dr["count"].ToString());
+            }
+
 
             string sql = $@"SELECT count(*) as count
                          FROM  UsersModel
@@ -270,6 +396,11 @@ namespace AuthSystem.Data.Controller
             {
                 var item = new Usertotalcount();
                 item.count = int.Parse(dr["count"].ToString());
+                double val1 = double.Parse(dr["count"].ToString());
+                double val2 = double.Parse(total.ToString());
+
+                double results = Math.Abs(val1 / val2 * 100);
+                item.percentage = results;
                 result.Add(item);
             }
 
@@ -393,69 +524,192 @@ namespace AuthSystem.Data.Controller
                 return BadRequest("ERROR");
             }
         }
+        public static IEnumerable<dynamic> MonthsBetween(
+            DateTime startDate,
+            DateTime endDate)
+            {
+            DateTime iterator;
+            DateTime limit;
+
+            if (endDate > startDate)
+            {
+                iterator = new DateTime(startDate.Year, startDate.Month, 1);
+                limit = endDate;
+            }
+            else
+            {
+                iterator = new DateTime(endDate.Year, endDate.Month, 1);
+                limit = startDate;
+            }
+
+            var dateTimeFormat = CultureInfo.CurrentCulture.DateTimeFormat;
+            while (iterator <= limit)
+            {
+
+                var firstDayOfMonth = new DateTime(iterator.Year, iterator.Month, 1);
+                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+                yield return new
+                {
+                   label = dateTimeFormat.GetMonthName(iterator.Month)
+                    
+                };
+
+                iterator = iterator.AddMonths(1);
+            }
+        }
         [HttpPost]
         public async Task<IActionResult> PostNewRegistered(UserFilterday data)
         {
+            int total = 0;
             int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
-            int day = data.day == 1 ? daysLeft : data.day;
+            int day = data.day == 1 ? 334 : data.day;
             string datecreated = "";
             int count_ = 0;
+            var result = new List<Usertotalcount>();
             try
             {
-                DateTime startDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd")).AddDays(-data.day);
+                string sqls = $@"select Count(*) as count from UsersModel where active=1";
+                DataTable dts = db.SelectDb(sqls).Tables[0];
+
+                foreach (DataRow dr in dts.Rows)
+                {
+                    total = int.Parse(dr["count"].ToString());
+                }
+
+                DateTime startDate = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd")).AddDays(-day);
 
                 DateTime endDate = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
-                List<DateTime> allDates = new List<DateTime>();
-                var result = new List<Usertotalcount>();
-                for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+
+                var months = MonthsBetween(startDate, endDate).ToList();
+                var items = new List<monthsdate>();
+                var mo = JsonConvert.SerializeObject(months);
+                var list = JsonConvert.DeserializeObject<List<monthsdate>>(mo);
+                if (data.day == 1)
                 {
-                    //allDates.Add(date.Date);
-                    var dategen = date.Date.ToString("yyyy-MM-dd");
-                  
-                    string sql1 = $@"select DateCreated,Count(*) as count from UsersModel where active = 1 and DateCreated='" + dategen + "' group by DateCreated order by  DateCreated ";
-                    DataTable dt1 = db.SelectDb(sql1).Tables[0];
+                    for(int x= 0; x<list.Count; x++)
+                    {
+                        //var item = new monthsdate();
+                        //var month = list[x].label;
+                        //item.label = month;
+                        //items.Add(item);
+                        string sql1 = $@"SELECT  DATENAME(month,DateCreated)  AS month , count(*) as count from UsersModel where active = 1 and DATENAME(month,DateCreated) = '"+ list[x].label + "'   group by   DATENAME(month,DateCreated)   ";
+                        DataTable dt1 = db.SelectDb(sql1).Tables[0];
 
-     
-                    if (dt1.Rows.Count == 0)
-                    {
-                        datecreated = dategen;
-                        count_ = 0;
-                    }
-                    else
-                    {
-                        foreach (DataRow dr in dt1.Rows)
+
+                        if (dt1.Rows.Count == 0)
                         {
-                            datecreated = dr["DateCreated"].ToString();
-                            count_ = int.Parse(dr["count"].ToString());
+                            datecreated = list[x].label;
+                            count_ = 0;
                         }
-                    }
+                        else
+                        {
+                            foreach (DataRow dr in dt1.Rows)
+                            {
+                                datecreated = dr["month"].ToString();
+                                count_ = int.Parse(dr["count"].ToString());
+                            }
+                        }
 
-                    string sql = $@"SELECT count(*) as count
+                        string sql = $@"SELECT count(*) as count
                          FROM  UsersModel
                          WHERE DateCreated >= DATEADD(day,-" + day + ", GETDATE()) and active= 1";
-                    DataTable dt = db.SelectDb(sql).Tables[0];
-                    var item = new Usertotalcount();
-                    if (dt.Rows.Count > 0)
-                    {
-                        foreach (DataRow dr in dt.Rows)
+                        DataTable dt = db.SelectDb(sql).Tables[0];
+                        var item = new Usertotalcount();
+                        if (dt.Rows.Count > 0)
                         {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                double val1 = double.Parse(dr["count"].ToString());
+                                double val2 = double.Parse(total.ToString());
 
-                            item.count = int.Parse(dr["count"].ToString());
-                            item.Date = DateTime.Parse(datecreated).ToString("dd");
-                            item.graph_count = count_;
-                            result.Add(item);
+                                double results = Math.Abs(val1 / val2 * 100);
+                                item.count = int.Parse(dr["count"].ToString());
+                                item.Date = datecreated;
+                                item.graph_count = count_;
+                                item.percentage = results;
+                                result.Add(item);
+
+                            }
+
 
                         }
+                        else
+                        {
+                            return BadRequest("ERROR");
+                        }
 
-                       
-                    }
-                    else
-                    {
-                        return BadRequest("ERROR");
                     }
 
-                    
                 }
+                else
+                {
+                    string query = $@"select Count(*) as count from UsersModel where active=1";
+                    DataTable dtble = db.SelectDb(query).Tables[0];
+
+                    foreach (DataRow dr in dtble.Rows)
+                    {
+                        total = int.Parse(dr["count"].ToString());
+                    }
+                    List<DateTime> allDates = new List<DateTime>();
+                    
+                    for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+                    {
+                        //allDates.Add(date.Date);
+                        var dategen = date.Date.ToString("yyyy-MM-dd");
+
+                        string sql1 = $@"select DateCreated,Count(*) as count from UsersModel where active = 1 and DateCreated='" + dategen + "' group by DateCreated order by  DateCreated ";
+                        DataTable dt1 = db.SelectDb(sql1).Tables[0];
+
+
+                        if (dt1.Rows.Count == 0)
+                        {
+                            datecreated = dategen;
+                            count_ = 0;
+                        }
+                        else
+                        {
+                            foreach (DataRow dr in dt1.Rows)
+                            {
+                                datecreated = dr["DateCreated"].ToString();
+                                count_ = int.Parse(dr["count"].ToString());
+                            }
+                        }
+
+                        string sql = $@"SELECT count(*) as count
+                         FROM  UsersModel
+                         WHERE DateCreated >= DATEADD(day,-" + day + ", GETDATE()) and active= 1";
+                        DataTable dt = db.SelectDb(sql).Tables[0];
+                        var item = new Usertotalcount();
+                        if (dt.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dt.Rows)
+                            {
+                                double val1 = double.Parse(dr["count"].ToString());
+                                double val2 = double.Parse(total.ToString());
+
+                                double results = Math.Abs(val1 / val2 * 100);
+
+                                item.count = int.Parse(dr["count"].ToString());
+                                item.Date = DateTime.Parse(datecreated).ToString("dd");
+                                item.graph_count = count_;
+                                item.percentage = results;
+                                result.Add(item);
+
+                            }
+
+
+                        }
+                        else
+                        {
+                            return BadRequest("ERROR");
+                        }
+
+
+                    }
+
+                }
+
 
                 return Ok(result);
             }
@@ -582,16 +836,27 @@ namespace AuthSystem.Data.Controller
         {
             public int day { get; set; }
 
+        }    
+        public class UserFilterCatday
+        {
+            public int day { get; set; }
+            public string category { get; set; }
+
         }
         public class SupportModel
         {
             public int Supportcount { get; set; }
+
+        } public class monthsdate
+        {
+            public string label { get; set; }
 
         }
         public class Usertotalcount
         {
             public int count { get; set; }
             public int graph_count { get; set; }
+            public double percentage { get; set; }
             public string Date { get; set; }
 
         }

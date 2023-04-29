@@ -141,7 +141,7 @@ namespace AuthSystem.Data.Controller
             }
             else
             {
-                return BadRequest("Error");
+                return BadRequest("Error/Deleted Data");
             }
 
         }
