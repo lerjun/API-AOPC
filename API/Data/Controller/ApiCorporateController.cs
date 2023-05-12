@@ -78,9 +78,9 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> CompanyList()
         {
             string sql = $@"SELECT DISTINCT 
-                         tbl_MembershipPrivilegeModel.Count AS UserCount, tbl_MembershipPrivilegeModel.VipCount, tbl_CorporateModel.CorporateName, tbl_CorporateModel.Address, tbl_CorporateModel.CNo, tbl_CorporateModel.EmailAddress, 
-                         tbl_CorporateModel.CompanyID, tbl_MembershipModel.Name AS Tier, tbl_MembershipModel.Description, tbl_CorporateModel.MembershipID AS memid, tbl_StatusModel.Name AS Status, tbl_CorporateModel.Id, 
-                         tbl_CorporateModel.DateCreated
+                         tbl_CorporateModel.CorporateName, tbl_CorporateModel.Address, tbl_CorporateModel.CNo, tbl_CorporateModel.EmailAddress, tbl_CorporateModel.CompanyID, tbl_MembershipModel.Name AS Tier, 
+                         tbl_MembershipModel.Description, tbl_CorporateModel.MembershipID AS memid, tbl_StatusModel.Name AS Status, tbl_CorporateModel.Id, tbl_CorporateModel.DateCreated, tbl_MembershipPrivilegeModel.MembershipID, 
+                         tbl_MembershipModel.VIPCount, tbl_MembershipModel.UserCount
 FROM            tbl_MembershipPrivilegeModel LEFT OUTER JOIN
                          tbl_CorporateModel ON tbl_MembershipPrivilegeModel.MembershipID = tbl_CorporateModel.MembershipID LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_CorporateModel.Status = tbl_StatusModel.Id LEFT OUTER JOIN

@@ -157,13 +157,12 @@ WHERE        (tbl_OfferingModel.StatusID = 5) order by id desc";
            
                 string sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_OfferingModel.PromoReleaseText, tbl_OfferingModel.OfferingName, tbl_MembershipModel.Name AS MembershipName, 
                          tbl_VendorModel.VendorID, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.Id, tbl_OfferingModel.OfferingID, tbl_StatusModel.Name AS Status, tbl_OfferingModel.Url, tbl_OfferingModel.OfferDays, tbl_OfferingModel.StartDate, 
-                         tbl_OfferingModel.EndDate, tbl_PrivilegeModel.Title, tbl_PrivilegeModel.PrivilegeID, tbl_OfferingModel.PromoDesc, tbl_OfferingModel.FromTime, tbl_OfferingModel.ToTime
+                         tbl_OfferingModel.EndDate, tbl_OfferingModel.PromoDesc, tbl_OfferingModel.FromTime, tbl_OfferingModel.ToTime
 FROM            tbl_OfferingModel INNER JOIN
                          tbl_BusinessTypeModel ON tbl_OfferingModel.BusinessTypeID = tbl_BusinessTypeModel.Id INNER JOIN
                          tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
                          tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
-                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id INNER JOIN
-                         tbl_PrivilegeModel ON tbl_OfferingModel.PrivilegeID = tbl_PrivilegeModel.Id
+                         tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
 WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "')";
             
         

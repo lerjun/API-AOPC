@@ -74,7 +74,8 @@ namespace AuthSystem.Data.Controller
             {
         
                 string query = "";
-                 query = $@"insert into tbl_audittrailModel (Actions,Module,UserId,status,EmployeeID,ActionID,Business) values ('"+data.Actions+"','"+data.Module+"','"+data.UserId+"','"+data.status+ "','"+data.EmployeeID+"','"+data.ActionID+"','"+data.Business+"')";
+                 query = $@"insert into tbl_audittrailModel (Actions,Module,UserId,status,EmployeeID,ActionID,Business,DateCreated) values 
+                ('" +data.Actions+"','"+data.Module+"','"+data.UserId+"','"+data.status+ "','"+data.EmployeeID+"','"+data.ActionID+"','"+data.Business+"','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
                 _logger.LogInformation("Success Insert Audit Trail");
                 db.AUIDB_WithParam(query);
                 result.Status = "Audit Trail Inserted";
@@ -101,7 +102,7 @@ namespace AuthSystem.Data.Controller
                 DateTime expirydate = DateTime.Now.AddDays(1);
                 var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(data.Email);
                 string email= System.Convert.ToBase64String(plainTextBytes);
-                query = $@"insert into tbl_TokenModel (Token,ExpiryDate,Status,DateCreated) values ('" + email + "','"+expirydate.ToString("yyyy-MM-dd HH:mm:ss")+"','5','"+DateTime.Now.ToString("yyyy-MM-dd")+"')";
+                query = $@"insert into tbl_TokenModel (Token,ExpiryDate,Status,DateCreated) values ('" + email + "','"+expirydate.ToString("yyyy-MM-dd hh:mm:ss")+"','5','"+DateTime.Now.ToString("yyyy-MM-dd")+"')";
                 
                 db.AUIDB_WithParam(query);
                 var emailsend = "https://www.alfardanoysterprivilegeclub.com/change-password/" + email;
@@ -291,7 +292,7 @@ namespace AuthSystem.Data.Controller
     "<p class=footer > Alfardan Oyster Privilege Club App   </p>" +
      "</body>";
                     string query = "";
-                    query = $@"insert into tbl_SupportModel (EmployeeID,Message,Status) values ('" + data.EmployeeID + "','" + data.Message + "','14')";
+                    query = $@"insert into tbl_SupportModel (EmployeeID,Message,Status,DateCreated) values ('" + data.EmployeeID + "','" + data.Message + "','14','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
                     db.AUIDB_WithParam(query);
                     result.Status = "New Support Inserted";
                     message.Body = bodyBuilder.ToMessageBody();
@@ -559,9 +560,9 @@ namespace AuthSystem.Data.Controller
             {
         
                 string query = "";
-                 query = $@"insert into tbl_QrCodeLogsModel (EmpoyeeID,Longtitude,Latitude,IPAddres,Region,Country,City,AreaCode,ZipCode,ISOCode,MetroCode,TimeZone,PostalCode) values 
+                 query = $@"insert into tbl_QrCodeLogsModel (EmployeeID,Longtitude,Latitude,IPAddres,Region,Country,City,AreaCode,ZipCode,ISOCode,MetroCode,TimeZone,PostalCode,DateCreated) values 
                         ('" +data.EmpoyeeID + "','"+data.Longtitude + "','"+data.Latitude + "','"+data.IPAddres + "','" + data.Region + "','"+data.Country + "'," +
-                        "'"+data.City + "','"+data.AreaCode + "','" + data.ZipCode + "','"+data.ISOCode + "','"+data.MetroCode + "','"+data.TimeZone + "','"+data.PostalCode+"')";
+                        "'"+data.City + "','"+data.AreaCode + "','" + data.ZipCode + "','"+data.ISOCode + "','"+data.MetroCode + "','"+data.TimeZone + "','"+data.PostalCode+"','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
                 db.AUIDB_WithParam(query);
                 QrSendEmail(data);
 

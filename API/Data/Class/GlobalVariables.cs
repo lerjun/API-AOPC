@@ -673,7 +673,7 @@ namespace AuthSystem.Data.Class
         #region AuditTrail
         public void AudittrailLogIn(string module,string stats,string id ,int statsid)
         {
-            string query = $@"insert into tbl_audittrailModel (Actions,Module,UserId,status) values ('LogIn "+ stats +" at "+DateTime.Now.ToString("HH:mm:ss")+"','"+module+"','1','"+ statsid + "')";
+            string query = $@"insert into tbl_audittrailModel (Actions,Module,UserId,status) values ('LogIn "+ stats +" at "+DateTime.Now.ToString("hh:mm:ss")+"','"+module+"','1','"+ statsid + "')";
             db.AUIDB_WithParam(query);
         }
 

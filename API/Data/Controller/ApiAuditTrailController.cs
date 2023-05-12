@@ -22,7 +22,7 @@ using MimeKit;
 using MailKit.Net.Smtp;
 namespace AuthSystem.Data.Controller
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize("ApiKey")]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class ApiAuditTrailController : ControllerBase
@@ -65,7 +65,7 @@ namespace AuthSystem.Data.Controller
                 item.Id = int.Parse(dr["id"].ToString());
                 item.Actions = dr["Actions"].ToString();
                 item.Module = dr["Module"].ToString();
-                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy hh:mm:ss tt");
+                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy hh:mm:ss tt");
                 item.status = dr["status"].ToString();
                 item.EmployeeID = dr["EmployeeID"].ToString();
                 item.FullName = dr["Fname"].ToString() + " " + dr["Lname"].ToString();
@@ -105,8 +105,8 @@ namespace AuthSystem.Data.Controller
                 item.MetroCode = dr["MetroCode"].ToString();
                 item.TimeZone = dr["TimeZone"].ToString();
                 item.Fullname = dr["Fullname"].ToString();
-                item.DateCreated = DateTime.Parse( dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
-              
+                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy hh:mm:ss tt");
+
                 result.Add(item);
             }
 

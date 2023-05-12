@@ -107,25 +107,43 @@ namespace AuthSystem.Data.Controller
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<MostClickStoreModel>();
             int total = 0;
-            foreach (DataRow dr in dt.Rows)
+            if (dt.Rows.Count != 0)
             {
-                total += int.Parse(dr["count"].ToString());
-            }
-            foreach (DataRow dr in dt.Rows)
-            {
-                var item = new MostClickStoreModel();
-                item.Actions = dr["Actions"].ToString();
-                item.Business = dr["Business"].ToString();
-                item.Module = dr["Module"].ToString();
-                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
-                item.count = int.Parse(dr["count"].ToString());
-                double val1 = double.Parse(dr["count"].ToString());
-                double val2 = double.Parse(total.ToString());
+                foreach (DataRow dr in dt.Rows)
+                {
+                    total += int.Parse(dr["count"].ToString());
+                }
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new MostClickStoreModel();
+                    item.Actions = dr["Actions"].ToString();
+                    item.Business = dr["Business"].ToString();
+                    item.Module = dr["Module"].ToString();
+                    item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                    item.count = int.Parse(dr["count"].ToString());
+                    double val1 = double.Parse(dr["count"].ToString());
+                    double val2 = double.Parse(total.ToString());
 
-                double results = val1 / val2 * 100;
-                item.Total = Math.Round(results, 2);
-                result.Add(item);
+                    double results = val1 / val2 * 100;
+                    item.Total = Math.Round(results, 2);
+                    result.Add(item);
+                }
             }
+            else
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    var item = new MostClickStoreModel();
+                    item.Actions = "No Data";
+                    item.Business = "No Data";
+                    item.Module = "No Data";
+                    item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                    item.count = 0;
+                    item.Total = 0.00;
+                    result.Add(item);
+                }
+            }
+            
 
             return Ok(result);
         }
@@ -138,28 +156,47 @@ namespace AuthSystem.Data.Controller
                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Rooms & Suites' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
                         GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
-            var result = new List<MostClickHospitalityModel>();
             int total = 0;
-            foreach (DataRow dr in dt.Rows)
+            var result = new List<MostClickHospitalityModel>();
+            if (dt.Rows.Count != 0)
             {
-                total += int.Parse(dr["count"].ToString());
+                foreach (DataRow dr in dt.Rows)
+                {
+                    total += int.Parse(dr["count"].ToString());
+                }
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new MostClickHospitalityModel();
+                    item.Actions = dr["Actions"].ToString();
+                    item.Business = dr["Business"].ToString();
+                    item.Module = dr["Module"].ToString();
+                    item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                    item.count = int.Parse(dr["count"].ToString());
+                    double val1 = double.Parse(dr["count"].ToString());
+                    double val2 = double.Parse(total.ToString());
+
+                    double results = Math.Abs(val1 / val2 * 100);
+                    item.Total = Math.Round(results, 2);
+                    result.Add(item);
+                }
+
             }
-            foreach (DataRow dr in dt.Rows)
+            else
             {
-                var item = new MostClickHospitalityModel();
-                item.Actions = dr["Actions"].ToString();
-                item.Business = dr["Business"].ToString();
-                item.Module = dr["Module"].ToString();
-                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
-                item.count = int.Parse(dr["count"].ToString());
-                double val1 = double.Parse(dr["count"].ToString());
-                double val2 = double.Parse(total.ToString());
-
-                double results = Math.Abs(val1 / val2 * 100);
-                item.Total = Math.Round(results, 2);
-                result.Add(item);
+                for (int x = 0; x < 4; x++)
+                {
+                    var item = new MostClickHospitalityModel();
+                    item.Actions = "No Data";
+                    item.Business = "No Data";
+                    item.Module = "No Data";
+                    item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                    item.count = 0;
+                    item.Total = 0.00;
+                    result.Add(item);
+                }
             }
-
+             
+           
             return Ok(result);
         }
 
@@ -172,29 +209,50 @@ namespace AuthSystem.Data.Controller
                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
                         GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
-            var result = new List<MostClickRestoModel>();
-            int total = 0;
-            foreach (DataRow dr in dt.Rows)
+              var result = new List<MostClickRestoModel>();
+            if (dt.Rows.Count != 0)
             {
-                total += int.Parse(dr["count"].ToString());
+              
+                int total = 0;
+                foreach (DataRow dr in dt.Rows)
+                {
+                    total += int.Parse(dr["count"].ToString());
+                }
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new MostClickRestoModel();
+                    item.Actions = dr["Actions"].ToString();
+                    item.Business = dr["Business"].ToString();
+                    item.Module = dr["Module"].ToString();
+                    item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                    item.count = int.Parse(dr["count"].ToString());
+                    double val1 = double.Parse(dr["count"].ToString());
+                    double val2 = double.Parse(total.ToString());
+
+                    double results = Math.Abs(val1 / val2 * 100);
+                    item.Total = Math.Round(results, 2);
+                    result.Add(item);
+                }
+
+          
             }
-            foreach (DataRow dr in dt.Rows)
+            else
             {
-                var item = new MostClickRestoModel();
-                item.Actions = dr["Actions"].ToString();
-                item.Business = dr["Business"].ToString();
-                item.Module = dr["Module"].ToString();
-                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
-                item.count = int.Parse(dr["count"].ToString());
-                double val1 = double.Parse(dr["count"].ToString());
-                double val2 = double.Parse(total.ToString());
-
-                double results = Math.Abs(val1 / val2 * 100);
-                item.Total = Math.Round(results, 2);
-                result.Add(item);
+                for(int x =0; x < 4; x++)
+                {
+                    var item = new MostClickRestoModel();
+                    item.Actions = "No Data";
+                    item.Business = "No Data";
+                    item.Module = "No Data";
+                    item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                    item.count =0;
+                    item.Total = 0.00;
+                    result.Add(item);
+                }
+               
             }
-
             return Ok(result);
+
         }
         
         [HttpGet]
@@ -414,7 +472,7 @@ namespace AuthSystem.Data.Controller
             string sql = $@"SELECT        tbl_SupportModel.Id, tbl_SupportModel.Message, tbl_SupportModel.DateCreated, tbl_SupportModel.EmployeeID, CONCAT(UsersModel.Fname, ' ', UsersModel.Lname)  AS Fullname, tbl_StatusModel.Name AS Status
                          FROM            tbl_SupportModel INNER JOIN
                                                  UsersModel ON tbl_SupportModel.EmployeeID = UsersModel.EmployeeID INNER JOIN
-                                                 tbl_StatusModel ON tbl_SupportModel.Status = tbl_StatusModel.Id";
+                                                 tbl_StatusModel ON tbl_SupportModel.Status = tbl_StatusModel.Id order by id desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<SupportDetailModel>();
 
@@ -426,7 +484,7 @@ namespace AuthSystem.Data.Controller
                 item.Fullname = dr["Fullname"].ToString();
                 item.EmployeeID = dr["EmployeeID"].ToString();
                 item.Status = dr["Status"].ToString();
-                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy hh:mm:ss tt");
                 result.Add(item);
             }
 
@@ -475,6 +533,39 @@ namespace AuthSystem.Data.Controller
             return Ok(result);
         }
         #region POST METHOD
+
+        [HttpPost]
+        public async Task<IActionResult> PostClickCountsListAll(UserFilterday data)
+        {
+            int daysLeft = new DateTime(DateTime.Now.Year, 12, 31).DayOfYear - DateTime.Now.DayOfYear;
+            int day = data.day == 1 ? daysLeft : data.day;
+
+            string sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
+                         WHERE Actions LIKE '%Clicked%'  and Module <> 'AOPC APP' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-"+ day + ", GETDATE()) " +
+                         "GROUP BY Business order by count desc;";
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            var result = new List<ClicCountModel>();
+            if(dt.Rows.Count != 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    var item = new ClicCountModel();
+                    item.Module = dr["Business"].ToString();
+                    item.Count = int.Parse(dr["count"].ToString());
+                    result.Add(item);
+                }
+
+            }
+            for (int x = 0; x < 4; x++)
+            {
+                var item = new ClicCountModel();
+                item.Module = "No Data";
+                item.Count = 0;
+                result.Add(item);
+            }
+
+            return Ok(result);
+        }
         [HttpPost]
         public async Task<IActionResult> PostMostClickRestaurantList(UserFilterday data)
         {
@@ -487,10 +578,11 @@ namespace AuthSystem.Data.Controller
                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
                         "GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
                 DataTable dt = db.SelectDb(sql).Tables[0];
+                var result = new List<MostClickRestoModel>();
+                int total = 0;
                 if (dt.Rows.Count > 0)
                 {
-                    var result = new List<MostClickRestoModel>();
-                    int total = 0;
+              
                     foreach (DataRow dr in dt.Rows)
                     {
                         total += int.Parse(dr["count"].ToString());
@@ -511,12 +603,24 @@ namespace AuthSystem.Data.Controller
                         result.Add(item);
                     }
 
-                    return Ok(result);
+                
                 }
                 else
                 {
-                    return BadRequest("ERROR");
+                    for (int x = 0; x < 4; x++)
+                    {
+                        var item = new MostClickRestoModel();
+                        item.Actions = "No Data";
+                        item.Business = "No Data";
+                        item.Module = "No Data";
+                        item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                        item.count = 0;
+                        item.Total = 0.00;
+                        result.Add(item);
+                    }
+
                 }
+                return Ok(result);
             }
 
             catch (Exception ex)
@@ -757,14 +861,24 @@ namespace AuthSystem.Data.Controller
                         result.Add(item);
                     }
 
-                    return Ok(result);
              
-            
                 }
                 else
                 {
-                    return BadRequest("ERROR");
+                    for (int x = 0; x < 4; x++)
+                    {
+                        var item = new MostClickHospitalityModel();
+                        item.Actions = "No Data";
+                        item.Business = "No Data";
+                        item.Module = "No Data";
+                        item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                        item.count = 0;
+                        item.Total = 0.00;
+                        result.Add(item);
+                    }
+
                 }
+                return Ok(result);
 
 
             }
@@ -819,8 +933,21 @@ namespace AuthSystem.Data.Controller
                 }
                 else
                 {
-                    return BadRequest("ERROR");
+                    for (int x = 0; x < 4; x++)
+                    {
+                        var item = new MostClickStoreModel();
+                        item.Actions = "No Data";
+                        item.Business = "No Data";
+                        item.Module = "No Data";
+                        item.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                        item.count = 0;
+                        item.Total = 0.00;
+                        result.Add(item);
+                    }
+
                 }
+                return Ok(result);
+
 
 
             }

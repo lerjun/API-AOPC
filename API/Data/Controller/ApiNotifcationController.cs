@@ -152,7 +152,7 @@ namespace AuthSystem.Data.Controller
             string sql = $@"SELECT        tbl_NotificationModel.Details, tbl_NotificationModel.isRead, tbl_NotificationModel.DateCreated,Concat(UsersModel.Fname,' ', UsersModel.Lname) as Fullname, tbl_NotificationModel.Id, tbl_NotificationModel.EmployeeID, tbl_NotificationModel.Module, tbl_NotificationModel.ItemID, 
                          tbl_NotificationModel.EmailStatus
                          FROM            tbl_NotificationModel INNER JOIN
-                         UsersModel ON tbl_NotificationModel.EmployeeID = UsersModel.EmployeeID";
+                         UsersModel ON tbl_NotificationModel.EmployeeID = UsersModel.EmployeeID order by id desc";
             var result = new List<NotificationVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 

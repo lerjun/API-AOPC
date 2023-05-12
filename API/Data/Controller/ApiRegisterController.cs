@@ -691,8 +691,8 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                         }
                         string EncryptPword = Cryptography.Encrypt(list[i].Password);
                         var fullname = list[i].Fname + " " + list[i].Lname;
-                        string query = $@"insert into UsersModel (Username,Password,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID) values
-                    ('" + list[i].Username + "','','" + fullname + "','" + list[i].Fname + "','" + list[i].Lname + "','" + list[i].Email + "','" + list[i].Gender + "','" + list[i].CorporateID + "','" + list[i].PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','2','" + list[i].Cno + "','" + list[i].isVIP + "','N/A','" + list[i].Type + "','" + list[i].EmployeeID + "')";
+                        string query = $@"insert into UsersModel (Username,Password,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID,DateCreated) values
+                    ('" + list[i].Username + "','','" + fullname + "','" + list[i].Fname + "','" + list[i].Lname + "','" + list[i].Email + "','" + list[i].Gender + "','" + list[i].CorporateID + "','" + list[i].PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','2','" + list[i].Cno + "','" + list[i].isVIP + "','N/A','" + list[i].Type + "','" + list[i].EmployeeID + "','"+DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")+"')";
                         db.AUIDB_WithParam(query);
                         gv.AudittrailLogIn("Successfully Import User Pre-Registration ", "User Registration Form", list[i].EmployeeID.ToString(), 7);
                         _global.Status = "Successfully Saved.";
@@ -735,7 +735,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                         DataTable dt = db.SelectDb(sql).Tables[0];
                         if (dt.Rows.Count == 0)
                         {
-                            query += $@"insert into tbl_PositionModel (Name,Description,Status) values ('" +data.PositionName+"','"+data.Description+"','5')"  ;
+                            query += $@"insert into tbl_PositionModel (Name,Description,Status,DateCreated) values ('" +data.PositionName+"','"+data.Description+"','5','"+DateTime.Now.ToString("yyyy-MM-dd")+"')"  ;
                             db.AUIDB_WithParam(query);
                             result = "Inserted Successfully";
                             return Ok(result);
@@ -829,13 +829,13 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
             string result="";
             try
             {
-    
-                if(data.EmployeeID.Length != 0 || data.Fname.Length != 0 || data.Lname.Length != 0 || data.Email.Length != null || data.EmployeeID.Length != null ||
+
+                if (data.EmployeeID.Length != 0 || data.Fname.Length != 0 || data.Lname.Length != 0 || data.Email.Length != null || data.EmployeeID.Length != null ||
                     data.Email.Length != 0)
                 {
-           
-                  
-                        StringBuilder str_build = new StringBuilder();
+
+
+                    StringBuilder str_build = new StringBuilder();
                     Random random = new Random();
                     int length = 8;
                     char letter;
@@ -847,7 +847,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                         letter = Convert.ToChar(shift + 2);
                         str_build.Append(letter);
                     }
-             
+
                     var token = Cryptography.Encrypt(str_build.ToString());
                     string strtokenresult = token;
                     string[] charsToRemove = new string[] { "/", ",", ".", ";", "'", "=", "+" };
@@ -866,78 +866,97 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                     {
                         filepath = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FilePath;
                     }
- 
-                    if(data.Id == 0)
+
+                    if (data.Id == 0)
                     {
-                        string sql = $@"select * from usersmodel where EmployeeID='" + data.EmployeeID + "'";
+                        string sql1 = $@"select * from usersmodel where Username ='" + data.Username + "'";
+                        DataTable dt1 = db.SelectDb(sql1).Tables[0];
+                        string sql = $@"select * from usersmodel where EmployeeID='" + data.EmployeeID + "' ";
                         DataTable dt = db.SelectDb(sql).Tables[0];
-                        if (dt.Rows.Count == 0)
+                        if (dt1.Rows.Count != 0)
                         {
-                       
-                            query += $@"insert into UsersModel (Username,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID) values
-                                     ('" + data.Username + "','" + fullname + "','" + data.Fname + "','" + data.Lname + "','" + data.Email + "','" + data.Gender + "','" + data.CorporateID + "','" + data.PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','"+data.Active+"','" + data.Cno + "','" + data.isVIP + "','N/A','" + data.Type + "','" + data.EmployeeID + "')";
+                            result = "User Information Already Used!";
+                        }
+
+                        else if (dt.Rows.Count == 0)
+                        {
+
+                            query += $@"insert into UsersModel (Username,Fullname,Fname,Lname,Email,Gender,CorporateID,PositionID,JWToken,FilePath,Active,Cno,isVIP,Address,Type,EmployeeID,DateCreated) values
+                                     ('" + data.Username + "','" + fullname + "','" + data.Fname + "','" + data.Lname + "','" + data.Email + "','" + data.Gender + "','" + data.CorporateID + "','" + data.PositionID + "','" + string.Concat(strtokenresult.TakeLast(15)) + "','" + filepath + "','" + data.Active + "','" + data.Cno + "','" + data.isVIP + "','N/A','" + data.Type + "','" + data.EmployeeID + "','" + DateTime.Now.ToString("yyyy-MM-dd") + "')";
                             db.AUIDB_WithParam(query);
 
                             string getlastinserted = $@"select Top(1) * from UsersModel order by id desc";
                             DataTable dt2 = db.SelectDb(getlastinserted).Tables[0];
                             if (dt2.Rows.Count > 0)
                             {
-                                string getid =  dt2.Rows[0]["Id"].ToString();
+                                string getid = dt2.Rows[0]["Id"].ToString();
 
                                 string sqlmembership = $@"SELECT     tbl_CorporateModel.MembershipID, tbl_MembershipModel.Name, tbl_MembershipModel.Id AS MembershipID, tbl_CorporateModel.CorporateName, tbl_CorporateModel.Id AS CorporateID, 
                                                   tbl_MembershipModel.DateEnded
                                                   FROM            tbl_CorporateModel INNER JOIN
                                                   tbl_MembershipModel ON tbl_CorporateModel.MembershipID = tbl_MembershipModel.Id
                                                 WHERE        (tbl_CorporateModel.Id = '" + data.CorporateID + "')";
-                                        DataTable dt3 = db.SelectDb(sqlmembership).Tables[0];
+                                DataTable dt3 = db.SelectDb(sqlmembership).Tables[0];
                                 if (dt3.Rows.Count > 0)
                                 {
-
-                                    string sqlprivilege = $@"select * from tbl_MembershipPrivilegeModel where MembershipID = '"+ dt3.Rows[0]["MembershipID"].ToString() + "'";
-                                    DataTable dt4 = db.SelectDb(sqlprivilege).Tables[0];
-                                    if (dt3.Rows.Count > 0)
                                     {
-                                        foreach (DataRow dr4 in dt4.Rows)
-                                        {
-                                            //item.Id = int.Parse(dr["id"].ToString())
-                                            string insertuserprivilege = $@"insert into tbl_UserPrivilegeModel (PrivilegeId,UserID,Validity) values ('" + dr4["PrivilegeID"].ToString() + "','" + getid + "','" + dt3.Rows[0]["DateEnded"].ToString() + "')";
-                                            db.AUIDB_WithParam(insertuserprivilege);
-                                        }
 
-                                        string insertusermembership = $@"insert into tbl_UserMembershipModel (UserID,MembershipID,Validity) values ('" + getid + "','" + dt3.Rows[0]["MembershipID"].ToString() + "','" + dt3.Rows[0]["DateEnded"].ToString() + "')";
-                                        db.AUIDB_WithParam(insertusermembership);
-                                        //dt.Rows[0]["MembershipName"].ToString();
+                                        string sqlprivilege = $@"select * from tbl_MembershipPrivilegeModel where MembershipID = '" + dt3.Rows[0]["MembershipID"].ToString() + "'";
+                                        DataTable dt4 = db.SelectDb(sqlprivilege).Tables[0];
+                                        if (dt3.Rows.Count > 0)
+                                        {
+                                            foreach (DataRow dr4 in dt4.Rows)
+                                            {
+                                                //item.Id = int.Parse(dr["id"].ToString())
+                                                string insertuserprivilege = $@"insert into tbl_UserPrivilegeModel (PrivilegeId,UserID,Validity) values ('" + dr4["PrivilegeID"].ToString() + "','" + getid + "','" + dt3.Rows[0]["DateEnded"].ToString() + "')";
+                                                db.AUIDB_WithParam(insertuserprivilege);
+                                            }
+
+                                            string insertusermembership = $@"insert into tbl_UserMembershipModel (UserID,MembershipID,Validity) values ('" + getid + "','" + dt3.Rows[0]["MembershipID"].ToString() + "','" + dt3.Rows[0]["DateEnded"].ToString() + "')";
+                                            db.AUIDB_WithParam(insertusermembership);
+                                            //dt.Rows[0]["MembershipName"].ToString();
+                                        }
                                     }
+                                    gv.AudittrailLogIn("Successfully", "Registered New User", data.EmployeeID, 7);
+                                    result = "Registered Successfully";
                                 }
-                                gv.AudittrailLogIn("Successfully", "Registered New User", data.EmployeeID, 7);
-                                result = "Registered Successfully";
                             }
-                        }
                             else
                             {
                                 result = "User Information Already Used!";
                             }
                         }
+                    }
                     else
                     {
-                        query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "' ,Username='" + data.Username + "'" +
+                        string password = "";
+                        if (data.Type == 1)
+                        {
+                            password = Cryptography.Encrypt(data.Password);
+                        }
+                        else
+                        {
+                            password = "";
+                        }
+                        query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Password='" + password + "' ,Username='" + data.Username + "'" +
                                ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' , PositionID='" + data.PositionID + "'" +
-                               ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='"+data.EmployeeID+"' " +
+                               ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
                                "where  Id='" + data.Id + "' ";
-                                    db.AUIDB_WithParam(query);
+                        db.AUIDB_WithParam(query);
 
                         gv.AudittrailLogIn("Successfully", "Registered Updated User Information", data.EmployeeID, 7);
 
                         result = "Updated Successfully";
                     }
+
+
+                    }
+                    else
+                    {
+                        result = "Error in Registration";
+                    }
+                    return Ok(result);
                 
-           
-                }
-                else
-                {
-                    result = "Error in Registration";
-                }
-                return Ok(result);
             }
 
             catch (Exception ex)

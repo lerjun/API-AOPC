@@ -106,7 +106,7 @@ namespace AuthSystem.Data.Controller
                 item.MetroCode = dr["MetroCode"].ToString();
                 item.TimeZone = dr["TimeZone"].ToString();
                 item.Fullname = dr["Fullname"].ToString();
-                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy");
+                item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM-dd-yyyy hh:mm:ss tt");
 
                 result.Add(item);
             }
