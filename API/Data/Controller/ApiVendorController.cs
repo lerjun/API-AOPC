@@ -157,7 +157,7 @@ FROM            tbl_VendorModel INNER JOIN
                 sql = $@"SELECT        tbl_BusinessTypeModel.BusinessTypeName, tbl_VendorModel.VendorName, tbl_VendorModel.Description, tbl_VendorModel.Address, tbl_VendorModel.FeatureImg, tbl_VendorModel.VendorID
                          FROM            tbl_VendorModel INNER JOIN
                          tbl_BusinessTypeModel ON tbl_VendorModel.BusinessTypeId = tbl_BusinessTypeModel.Id
-                        WHERE        (tbl_BusinessTypeModel.BusinessTypeName = '" +data.BusinessTypeName+"')";
+                        WHERE        (tbl_BusinessTypeModel.BusinessTypeName = '" +data.BusinessTypeName+ "')  AND tbl_VendorModel.Status = 5";
            
      
             DataTable table = db.SelectDb(sql).Tables[0];

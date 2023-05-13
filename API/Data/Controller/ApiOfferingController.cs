@@ -16,6 +16,7 @@ using AuthSystem.Data.Class;
 using AuthSystem.ViewModel;
 using Microsoft.Data.SqlClient;
 using static AuthSystem.Data.Controller.ApiVendorController;
+using static AuthSystem.Data.Controller.ApiPrivilegeController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -163,7 +164,7 @@ FROM            tbl_OfferingModel INNER JOIN
                          tbl_VendorModel ON tbl_OfferingModel.VendorID = tbl_VendorModel.Id INNER JOIN
                          tbl_MembershipModel ON tbl_OfferingModel.MembershipID = tbl_MembershipModel.Id INNER JOIN
                          tbl_StatusModel ON tbl_OfferingModel.StatusID = tbl_StatusModel.Id
-WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "')";
+WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and StatusID=5";
             
         
 
@@ -204,6 +205,23 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "')";
             }
 
                 return Ok(item);
+        }
+        [HttpGet]
+        public async Task<IActionResult> UserListEmail()
+        {
+            string sql = $@"select Concat (Fname , ' ' , Lname) as Fullname, Email from UsersModel where AllowEmailNotif =  1";
+
+            DataTable table = db.SelectDb(sql).Tables[0];
+            var result = new List<Userlist>();
+            foreach (DataRow dr in table.Rows)
+            {
+                var item = new Userlist();
+                item.Fullname = dr["Fullname"].ToString();
+                item.Email = dr["Email"].ToString();
+                result.Add(item);
+            }
+
+            return Ok(result);
         }
         [HttpPost]
         public async Task<IActionResult> OfferingFilterList(BtypeModel data)
@@ -290,6 +308,12 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "')";
         {
             public string Status { get; set; }
 
+        }  
+        public class Userlist
+        {
+            public string Fullname { get; set; }
+            public string Email { get; set; }
+
         }
         [HttpPost]
         public IActionResult SaveOffering(OfferingVM data)
@@ -312,7 +336,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "')";
             }
             if (dt.Rows.Count == 0)
             {
-                sql = $@"select * from tbl_OfferingModel where OfferingName='" + data.OfferingName + "'";
+                sql = $@"select * from tbl_OfferingModel where OfferingName='" + data.OfferingName + "' and StatusID = 5";
                 DataTable dt2 = db.SelectDb(sql).Tables[0];
                 if (dt2.Rows.Count  != 0)
                 {
@@ -370,7 +394,50 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "')";
 
             public int Id { get; set; }
         }
-     
+        [HttpPost]
+        public IActionResult DeleteOfferingList(List<DeleteOffer> IdList)
+        {
+            //string delete = $@"delete tbl_MembershipPrivilegeModel where MembershipID='" + IdList[0].MembershipID + "'";
+            //db.AUIDB_WithParam(delete);
+            var result = new Registerstats();
+            string imgfile = "";
+
+            foreach (var emp in IdList)
+            {
+                string delete = $@"update tbl_OfferingModel set StatusID = 6 where id ='" + emp.Id + "'";
+                db.AUIDB_WithParam(delete);
+            }
+            result.Status = "Successfully Added";
+
+            
+
+            return Ok(result);
+        }
+        public class UserEmail
+        {
+
+            public string email { get; set; }
+            public string offerid { get; set; }
+        }
+        [HttpPost]
+        public IActionResult SendEmail(List<UserEmail> IdList)
+        {
+            //string delete = $@"delete tbl_MembershipPrivilegeModel where MembershipID='" + IdList[0].MembershipID + "'";
+            //db.AUIDB_WithParam(delete);
+            var result = new Registerstats();
+            string imgfile = "";
+
+            //foreach (var emp in IdList)
+            //{
+            //    string delete = $@"update tbl_OfferingModel set StatusID = 6 where id ='" + emp.Id + "'";
+            //    db.AUIDB_WithParam(delete);
+            //}
+            result.Status = "Email Sent";
+
+            
+
+            return Ok(result);
+        }
         [HttpPost]
         public IActionResult DeleteOffering(DeleteOffer data)
         {

@@ -102,7 +102,7 @@ namespace AuthSystem.Data.Controller
             GlobalVariables gv = new GlobalVariables();
 
             string sql = $@"SELECT     Count(*)as count, Actions,Business,Module,tbl_audittrailModel.DateCreated
-                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Clicked%' and module ='Menu' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%View%' and module ='Shops & Services' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
                          GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<MostClickStoreModel>();
@@ -898,13 +898,17 @@ namespace AuthSystem.Data.Controller
             try
             {
                 string sql = $@"SELECT     Count(*)as count, Actions,Business,Module,tbl_audittrailModel.DateCreated
-                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%Clicked%' and module ='Menu' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-"+day+", GETDATE())" +
+                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%View%' and module ='Shops & Services' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-" +day+", GETDATE())" +
                          " GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
                 DataTable dt = db.SelectDb(sql).Tables[0];
-                var result = new List<MostClickStoreModel>();
+                List<MostClickStoreModel> result = new List<MostClickStoreModel>();
+                List<MostClickStoreModel> result2 = new List<MostClickStoreModel>();
                 int total = 0;
+                double sub_total = 0;
                 if (dt.Rows.Count > 0)
                 {
+
+                 
                     foreach (DataRow dr in dt.Rows)
                     {
                         total += int.Parse(dr["count"].ToString());
@@ -923,8 +927,25 @@ namespace AuthSystem.Data.Controller
                         double results = val1 / val2 * 100;
                         item.Total = Math.Round(results, 2);
                         result.Add(item);
-                    }
 
+                    }
+                    var total_res = Math.Abs(result.Count - 4);
+                    if(result.Count != 4)
+                    {
+                        for (int x = 0; x < total_res; x++)
+                        {
+                            var item2 = new MostClickStoreModel();
+                            item2.Actions = "No Data";
+                            item2.Business = "No Data";
+                            item2.Module = "No Data";
+                            item2.DateCreated = DateTime.Now.ToString("yyyy-MM-dd");
+                            item2.count = 0;
+                            double results = sub_total - 100;
+                            item2.Total = 0.01;
+                            result2.Add(item2);
+                        }
+                    }
+                    result.AddRange(result2);
                     return Ok(result);
 
                
