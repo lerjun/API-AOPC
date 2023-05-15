@@ -25,7 +25,10 @@ namespace AuthSystem.Models
         
         [Column(TypeName = "varchar(MAX)")]
         public string? MembershipID { get; set; }
-
+        [Column(TypeName = "int")]
+        public int Count { get; set; }
+        [Column(TypeName = "int")]
+        public int VipCount { get; set; }
 
         [Column(TypeName = "int")]
         public int? Status { get; set; }

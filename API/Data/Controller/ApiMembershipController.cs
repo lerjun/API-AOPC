@@ -49,19 +49,23 @@ WHERE        (tbl_MembershipModel.Status = 5) order by id desc";
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
             {
-                var item = new MembershipVM();
-                item.Id = dr["Id"].ToString();
-                item.MembershipName = dr["MembershipName"].ToString();
-                item.Description = dr["Description"].ToString();
-                item.DateStarted = Convert.ToDateTime(dr["DateStarted"].ToString()).ToString("MM/dd/yyyy");
-                item.DateEnded = Convert.ToDateTime(dr["DateEnded"].ToString()).ToString("MM/dd/yyyy");
-                item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
-                item.MembershipID = dr["MembershipID"].ToString();
-                item.Status = dr["Status"].ToString();
-                item.UserCount = int.Parse(dr["UserCount"].ToString());
-                item.VIPCount = int.Parse(dr["VIPCount"].ToString());
+                if (dr["MembershipName"].ToString() !="ALL TIER")
+                {
+                    var item = new MembershipVM();
+                    item.Id = dr["Id"].ToString();
+                    item.MembershipName = dr["MembershipName"].ToString();
+                    item.Description = dr["Description"].ToString();
+                    item.DateStarted = Convert.ToDateTime(dr["DateStarted"].ToString()).ToString("MM/dd/yyyy");
+                    item.DateEnded = Convert.ToDateTime(dr["DateEnded"].ToString()).ToString("MM/dd/yyyy");
+                    item.DateCreated = Convert.ToDateTime(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
+                    item.MembershipID = dr["MembershipID"].ToString();
+                    item.Status = dr["Status"].ToString();
+                    item.UserCount = int.Parse(dr["UserCount"].ToString());
+                    item.VIPCount = int.Parse(dr["VIPCount"].ToString());
 
-                result.Add(item);
+                    result.Add(item);
+                }
+                
             }
             return Ok(result);
         }

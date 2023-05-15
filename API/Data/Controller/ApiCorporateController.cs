@@ -80,7 +80,7 @@ namespace AuthSystem.Data.Controller
             string sql = $@"SELECT DISTINCT 
                          tbl_CorporateModel.CorporateName, tbl_CorporateModel.Address, tbl_CorporateModel.CNo, tbl_CorporateModel.EmailAddress, tbl_CorporateModel.CompanyID, tbl_MembershipModel.Name AS Tier, 
                          tbl_MembershipModel.Description, tbl_CorporateModel.MembershipID AS memid, tbl_StatusModel.Name AS Status, tbl_CorporateModel.Id, tbl_CorporateModel.DateCreated, tbl_MembershipPrivilegeModel.MembershipID, 
-                         tbl_MembershipModel.VIPCount, tbl_MembershipModel.UserCount
+                         tbl_CorporateModel.VipCount AS VIPCount, tbl_CorporateModel.Count AS UserCount
 FROM            tbl_MembershipPrivilegeModel LEFT OUTER JOIN
                          tbl_CorporateModel ON tbl_MembershipPrivilegeModel.MembershipID = tbl_CorporateModel.MembershipID LEFT OUTER JOIN
                          tbl_StatusModel ON tbl_CorporateModel.Status = tbl_StatusModel.Id LEFT OUTER JOIN
@@ -177,7 +177,22 @@ WHERE        (tbl_CorporateModel.Status = 1)";
             }
              return Content(_global.Status);
         }
-    
+        //public class CorporateModel
+        //{
+
+        //    public int Id { get; set; }
+        //    public int Count { get; set; }
+        //    public int VipCount { get; set; }
+
+        //    public string CorporateName { get; set; }
+        //    public string? Address { get; set; }
+        //    public string? CNo { get; set; }
+        //    public string? EmailAddress { get; set; }
+        //    public string? Description { get; set; }
+        //    public string? MembershipID { get; set; }
+        //    public int? Status { get; set; }
+
+        //}
         [HttpPost]
         public async Task<IActionResult> UpdateCorporate(CorporateModel data)
         {
@@ -201,7 +216,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
                     {
 
                         query += $@"update  tbl_CorporateModel set CorporateName='" + data.CorporateName + "',Address='" + data.Address + "' " +
-                               ",CNo='" + data.CNo + "' , EmailAddress='" + data.EmailAddress + "' , MembershipID='" + data.MembershipID + "' where  Id='" + data.Id + "' ";
+                               ",CNo='" + data.CNo + "' , EmailAddress='" + data.EmailAddress + "' , MembershipID='" + data.MembershipID + "', Count='"+data.Count+"', VipCount='"+data.VipCount+"' where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
                         result = "Updated Successfully";
                     }
@@ -400,7 +415,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
 
             return Content(_global.Status);
         }
-      
+
         [HttpPost]
         public async Task<IActionResult> FinalCorporateRegistration(CorporateModel data)
         {
@@ -412,7 +427,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
                     Address = data.Address,
                     CNo = data.CNo,
                     EmailAddress = data.EmailAddress,
-                    Status =1,
+                    Status = 1,
 
                 };
 
@@ -422,7 +437,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
                     //&& a.EmailAddress == data.EmailAddress && a.Status == 2).ToList().Count();
                     string sql = $@"SELECT        CorporateName, Address, CNo, EmailAddress, Status, CompanyID
                                 FROM            tbl_CorporateModel
-                                WHERE        (CorporateName = '"+data.CorporateName+"') AND (Address = '"+data.Address+"')  AND (EmailAddress = '"+data.EmailAddress+"') AND (Status = 2)";
+                                WHERE        (CorporateName = '" + data.CorporateName + "') AND (Address = '" + data.Address + "')  AND (EmailAddress = '" + data.EmailAddress + "') AND (Status = 2)";
                     DataTable dt = db.SelectDb(sql).Tables[0];
                     if (dt.Rows.Count > 0)
                     {

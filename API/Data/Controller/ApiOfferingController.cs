@@ -17,6 +17,9 @@ using AuthSystem.ViewModel;
 using Microsoft.Data.SqlClient;
 using static AuthSystem.Data.Controller.ApiVendorController;
 using static AuthSystem.Data.Controller.ApiPrivilegeController;
+using MimeKit;
+using static AuthSystem.Data.Controller.ApiUserAcessController;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AuthSystem.Data.Controller
 {
@@ -319,20 +322,38 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
         public IActionResult SaveOffering(OfferingVM data)
         {
 
-            string sql = "";
+            string sql_ = "";
+            string sql= "";
 
             sql = $@"select * from tbl_OfferingModel where id ='" + data.Id + "'";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new Registerstats();
             string imgfile = "";
             string FeaturedImage = "";
+            string res_image = "";
+            int image_ = 0;
+            if (data.Id != 0)
+            {
+                sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5 and id='" + data.Id + "' order by id desc  ";
+                DataTable table = db.SelectDb(sql_).Tables[0];
+                string str = table.Rows[0]["OfferingID"].ToString();
+                res_image = str;
+            }
+            else
+            {
+                sql_ += $@"select Top(1) OfferingID from tbl_OfferingModel where StatusID =5  order by id desc  ";
+                DataTable table = db.SelectDb(sql_).Tables[0];
+                string str = table.Rows[0]["OfferingID"].ToString();
+                image_ = int.Parse(str.Replace("Offering-", "")) + 1;
+                res_image = "Offering-0" + image_;
+            }
             if (data.ImgUrl == null || data.ImgUrl == string.Empty)
             {
                 FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/defaultavatar.png";
             }
             else
             {
-                FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.ImgUrl;
+                FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image;
             }
             if (dt.Rows.Count == 0)
             {
@@ -345,23 +366,20 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                 }
                 else
                 {
-                
-                    //if (data.MembershipID == "ALL")
-                    //{
-                    //    sql = $@"select * from tbl_MembershipModel where Status = 5";
-                    //    DataTable table = db.SelectDb(sql).Tables[0];
-                    //    foreach (DataRow dr in table.Rows)
-                    //    {
-                    //        string Insert = $@"insert into tbl_OfferingModel (VendorID,MembershipID,BusinessTypeID,OfferingName,PromoDesc,PromoReleaseText,ImgUrl,StatusID,PrivilegeID,Url,OfferDays,StartDate,EndDate,FromTime,ToTime) values 
-                    //               ('" + data.VendorID + "','" + dr["Id"].ToString() + "','" + data.BusinessTypeID + "','" + data.OfferingName + "','" + data.PromoDesc + "','" + data.PromoReleaseText + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
-                    //               ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
-                    //        db.AUIDB_WithParam(Insert);
-                    //    }
-                    //}
-                    //else
-                    //{
+
+                    if (data.MembershipID == "ALL")
+                    {
+                       
+                            string Insert = $@"insert into tbl_OfferingModel (VendorID,MembershipID,BusinessTypeID,OfferingName,PromoDesc,PromoReleaseText,ImgUrl,StatusID,PrivilegeID,Url,OfferDays,StartDate,EndDate,FromTime,ToTime) values 
+                                   ('" + data.VendorID + "','10','" + data.BusinessTypeID + "','" + data.OfferingName + "','" + data.PromoDesc + "','" + data.PromoReleaseText + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
+                                   ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
+                           db.AUIDB_WithParam(Insert);
+                        
+                    }
+                    else
+                    {
                         string Insert = $@"insert into tbl_OfferingModel (VendorID,MembershipID,BusinessTypeID,OfferingName,PromoDesc,PromoReleaseText,ImgUrl,StatusID,PrivilegeID,Url,OfferDays,StartDate,EndDate,FromTime,ToTime) values 
-                                   ('" + data.VendorID + "','" + data.MembershipID + "','" + data.BusinessTypeID + "','" + data.OfferingName + "','" + data.PromoDesc + "','" + data.PromoReleaseText + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
+                                   ('" + data.VendorID + "','" + data.MembershipID + "','" + data.BusinessTypeID + "','" + data.OfferingName + "','" + data.PromoDesc + "','" + data.EndDateTime + "','" + FeaturedImage + "',5,'" + data.PrivilegeID + "'" +
                                     ",'" + data.URL + "','" + data.Offerdays + "','" + data.StartDateTime + "','" + data.EndDateTime + "','" + data.FromTime + "','" + data.ToTime + "')";
                         db.AUIDB_WithParam(Insert);
                   
@@ -369,21 +387,34 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
                     result.Status = "Successfully Added";
 
                     return Ok(result);
-                    //}
+                    }
                 }
       
 
             }
             else
             {
+                if (data.MembershipID == "ALL")
+                {
+                    string OTPInsert = $@"update tbl_OfferingModel set VendorID='" + data.VendorID + "' ,MembershipID='10' ,BusinessTypeID='" + data.BusinessTypeID + "' ,OfferingName='" + data.OfferingName + "' ,PromoDesc='"
+                + data.PromoDesc + "' ,PromoReleaseText='" + data.EndDateTime + "' ,ImgUrl='" + FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='" + data.URL + "' ,OfferDays='" + data.Offerdays + "' ,StartDate='"
+                + data.StartDateTime + "' ,EndDate='" + data.EndDateTime + "' ,FromTime='" + data.FromTime + "' ,ToTime='" + data.ToTime + "'  where id =" + data.Id + "";
+                    db.AUIDB_WithParam(OTPInsert);
+                    result.Status = "Successfully Updated";
 
-                string OTPInsert = $@"update tbl_OfferingModel set VendorID='"+data.VendorID+"' ,MembershipID='"+data.MembershipID + "' ,BusinessTypeID='"+data.BusinessTypeID + "' ,OfferingName='"+data.OfferingName + "' ,PromoDesc='"
-                    +data.PromoDesc + "' ,PromoReleaseText='' ,ImgUrl='"+ FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='"+data.URL + "' ,OfferDays='"+data.Offerdays + "' ,StartDate='"
-                    +data.StartDateTime+"' ,EndDate='"+data.EndDateTime+"' ,FromTime='"+data.FromTime+"' ,ToTime='"+data.ToTime+"'  where id =" + data.Id + "";
-                db.AUIDB_WithParam(OTPInsert);
-                result.Status = "Successfully Updated";
+                    return Ok(result);
+                }
+                else
+                {
+                    string OTPInsert = $@"update tbl_OfferingModel set VendorID='" + data.VendorID + "' ,MembershipID='" + data.MembershipID + "' ,BusinessTypeID='" + data.BusinessTypeID + "' ,OfferingName='" + data.OfferingName + "' ,PromoDesc='"
+                    + data.PromoDesc + "' ,PromoReleaseText='" + data.EndDateTime + "' ,ImgUrl='" + FeaturedImage + "' ,StatusID='5' ,PrivilegeID='' ,Url='" + data.URL + "' ,OfferDays='" + data.Offerdays + "' ,StartDate='"
+                    + data.StartDateTime + "' ,EndDate='" + data.EndDateTime + "' ,FromTime='" + data.FromTime + "' ,ToTime='" + data.ToTime + "'  where id =" + data.Id + "";
+                    db.AUIDB_WithParam(OTPInsert);
+                    result.Status = "Successfully Updated";
 
-                return Ok(result);
+                    return Ok(result);
+
+                }
             }
 
 
@@ -427,16 +458,77 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             var result = new Registerstats();
             string imgfile = "";
 
-            //foreach (var emp in IdList)
-            //{
-            //    string delete = $@"update tbl_OfferingModel set StatusID = 6 where id ='" + emp.Id + "'";
-            //    db.AUIDB_WithParam(delete);
-            //}
-            result.Status = "Email Sent";
+            foreach (var emp in IdList)
+            {
+                //var emailsend = "https://www.alfardanoysterprivilegeclub.com/change-password/" + email;
+                //var message = new MimeMessage();
+                //message.From.Add(new MailboxAddress("AOPC Registration", "app@alfardan.com.qa"));
+                //message.To.Add(new MailboxAddress("", data.Email));
+                //message.Subject = "Email Registration Link";
+                //var bodyBuilder = new BodyBuilder();
+                //string img = "../img/AOPCBlack.jpg";
+                //bodyBuilder.HtmlBody = @"<!DOCTYPE html>
+                //<html lang=""en"">
+                //<head>
+                //    <meta charset=""UTF-8"">
+                //    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                //    <meta http-equiv=""X-UA-Compatible"" content=""ie=edge"">
+                //    <title>Oyster Privilege Club</title>
+                //</head>
+                //<style>
+                //    @font-face {
+                //    font-family: 'Montserrat-Reg';
+                //    src: 
+                //    url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-Regular.ttf');
+                //    }
+                //    @font-face {
+                //        font-family: 'Montserrat-SemiBold';
+                //        src: url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-SemiBold.ttf');
+                //    }
+                //    body{
+                //        display: flex;
+                //        flex-direction: column;
+                //        font-family: 'Montserrat-Reg';
+                //    }
+                //    .img-container {
+                //        width: 200px;
+                //        margin:0 auto;
+                //    }
+                //    h3{
+                //        width: 400px;
+                //        text-align: center;
+                //        margin:20px auto;
+                //    }
+                //    p{
+                //        width: 400px;
+                //        margin:10px auto;
+                //    }
+                //</style>
+                //<body>
+                //    <div class=""img-container"">
+                //        <img width=""100%"" src=""https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC-low-black.png"" alt="""">
+                //    </div>
+                //    <h3>Reset Password</h3>
+                //    <p>We received a request to reset the password for your account. If you did not initiate this request, please ignore this email.</p>
+                //    <p>To reset your password, please click the following link:<a href=" + emailsend + ">" + emailsend + "</a>. This link will be valid for the next 24 hours.</p>" +
+                //    "<p>If you have any issues with resetting your password or need further assistance, please contact our support team at <b>app@alfaran.com.qa</b>.</p>" +
+                //"</body> " +
+                //"</html>";
+                //message.Body = bodyBuilder.ToMessageBody();
+                //using (var client = new SmtpClient())
+                //{
+                //    client.Connect("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                //    client.Authenticate("app@alfardan.com.qa", "Oyster2023!");
+                //    client.Send(message);
+                //    client.Disconnect(true);
+                //    status = "Successfully sent registration email";
 
-            
-
+                //}
+                //result.Status = "Success!";
+        
+            }
             return Ok(result);
+
         }
         [HttpPost]
         public IActionResult DeleteOffering(DeleteOffer data)

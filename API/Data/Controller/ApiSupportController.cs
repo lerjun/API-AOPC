@@ -83,7 +83,7 @@ namespace AuthSystem.Data.Controller
             GlobalVariables gv = new GlobalVariables();
 
             string sql = $@"SELECT Business, Count(*) as count FROM tbl_audittrailModel
-                         WHERE Actions LIKE '%Clicked%'  and Module <> 'AOPC APP' GROUP BY Business order by count desc;";
+                         WHERE Actions LIKE '%view%'  and Module ='news' and Business <> '' GROUP BY Business order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<ClicCountModel>();
             foreach (DataRow dr in dt.Rows)
@@ -259,22 +259,22 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> GetCallToActionsList()
         {
 
-            string sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email
+            string sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
                             FROM            tbl_audittrailModel
                             WHERE        (Module = 'Mail')
-                            GROUP BY Business) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call
+                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call,DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Call')
-                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Book
+                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*)AS Book , DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book')
-                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
-                            GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
+                            WHERE        (Module = 'Book') 
+                            GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1   where Module='Hotel' or Module='Food & Beverage'  
+                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business  order by Mail.Email desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<CallToActionsModel>();
             foreach (DataRow dr in dt.Rows)
@@ -305,79 +305,77 @@ namespace AuthSystem.Data.Controller
             {
                 if (data.day == 0 && data.category == "0")
                 {
-                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
                             FROM            tbl_audittrailModel
                             WHERE        (Module = 'Mail')
-                            GROUP BY Business) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call
+                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call,DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Call')
-                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Book
+                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*)AS Book , DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book')
-                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
-                            GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
+                            WHERE        (Module = 'Book') 
+                            GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1   where Module='Hotel' or Module='Food & Beverage'  
+                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
                 }
                 else if(data.day == 0 && data.category != "0" )
                 {
-                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
                             FROM            tbl_audittrailModel
                             WHERE        (Module = 'Mail')
-                            GROUP BY Business) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call
+                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call,DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Call')
-                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Book
+                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*)AS Book , DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book')
-                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module,DateCreated
+                            WHERE        (Module = 'Book') 
+                            GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                            (SELECT        Business, Module
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
-                            GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business where Category.Module = '" + data.category + "' order by Mail.Email desc ";
+                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business where Category.Module = '"+data.category+"' order by Mail.Email desc ";
                 }
                 else if (data.day != 0 && data.category == "0" )
                 {
-                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
                             FROM            tbl_audittrailModel
                             WHERE        (Module = 'Mail')
-                            GROUP BY Business) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call
+                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call,DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Call')
-                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Book
+                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*)AS Book , DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book')
-                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'   and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) "+
-                            "GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business  order by Mail.Email desc ";
+                            WHERE        (Module = 'Book') and DateCreated >= DATEADD(day,-"+day+", GETDATE()) " +
+                            "GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN (SELECT        Business, Module " +
+                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage' " +
+                            " GROUP BY Business, Module) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
                 }
                 else
                 {
-                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category , Category.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email
+                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
+                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
                             FROM            tbl_audittrailModel
                             WHERE        (Module = 'Mail')
-                            GROUP BY Business) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call
+                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*) AS Call,DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Call')
-                            GROUP BY Business) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Book
+                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                            (SELECT        Business, COUNT(*)AS Book , DateCreated
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book')
-                            GROUP BY Business) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
-                                                "GROUP BY Business, Module,DateCreated) AS Category ON Book.Business = Category.Business where Category.Module = '" + data.category + "' order by Mail.Email desc ";
+                            WHERE        (Module = 'Book') and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
+                            "GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN (SELECT        Business, Module " +
+                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage' " +
+                            " GROUP BY Business, Module) AS Category ON Book.Business = Category.Business  where Category.Module = '"+data.category+"' order by Mail.Email desc ";
                 }
                 
             DataTable dt = db.SelectDb(sql).Tables[0];

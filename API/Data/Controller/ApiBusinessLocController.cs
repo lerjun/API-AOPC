@@ -111,7 +111,7 @@ namespace AuthSystem.Data.Controller
 
                     if (data.Id == 0)
                     {
-                        string sql = $@"select * from tbl_BusinessLocationModel where Country='" + data.Country + "' and  City='" + data.City + "'";
+                        string sql = $@"select * from tbl_BusinessLocationModel where Country='" + data.Country + "' and  City='" + data.City + "' and Active='5'";
                         DataTable dt = db.SelectDb(sql).Tables[0];
                         if (dt.Rows.Count == 0)
                         {
@@ -156,7 +156,7 @@ namespace AuthSystem.Data.Controller
         public IActionResult DeleteBusinessLoc(DeleteVen data)
         {
 
-            string sql = $@"select * from tbl_BusinessLocationModel where id ='" + data.Id + "'";
+            string sql = $@"select * from tbl_BusinessLocationModel where id ='" + data.Id + "' and Active='5'";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new Registerstats();
             string imgfile = "";

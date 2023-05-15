@@ -20,6 +20,7 @@ using Serilog;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Web.Http.Results;
 using static AuthSystem.Data.Controller.ApiVendorController;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace AuthSystem.Data.Controller
 {
@@ -164,20 +165,41 @@ namespace AuthSystem.Data.Controller
 
                 if (data.BusinessName.Length != 0 || data.Description.Length != 0 )
                 {
+                    string sql = "";
+                    string res_image = "";
+                
                     string FeaturedImage = "";
+                    var image_ = (dynamic)null;
+                    if (data.Id != 0)
+                    {
+                        sql += $@"select Top(1) BusinessID from tbl_BusinessModel where Active =5 and id='" + data.Id + "' order by id desc  ";
+                        DataTable table = db.SelectDb(sql).Tables[0];
+                        string str = table.Rows[0]["BusinessID"].ToString();
+                        res_image = str;
+                    }
+                    else
+                    {
+                        sql += $@"select Top(1) BusinessID from tbl_BusinessModel where Active =5   order by id desc   ";
+                        DataTable table = db.SelectDb(sql).Tables[0];
+                        string str = table.Rows[0]["BusinessID"].ToString();
+                        image_ = int.Parse(str.Replace("Hotel-", "")) + 1;
+                        res_image = "Hotel-0" + image_;
+                    }
+
+          
                     if (data.FeatureImg == null)
                     {
                         FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/defaultavatar.png";
                     }
                     else
                     {
-                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg;
+                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image +".jpg";
                     }
                   
 
                     if (data.Id == 0)
                     {
-                        string sql = $@"select * from tbl_BusinessModel where BusinessName='" + data.BusinessName + "'";
+                      sql = $@"select * from tbl_BusinessModel where BusinessName='" + data.BusinessName + "'";
                         DataTable dt = db.SelectDb(sql).Tables[0];
                         if (dt.Rows.Count == 0)
                         {
