@@ -21,6 +21,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Web.Http.Results;
 using static AuthSystem.Data.Controller.ApiVendorController;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Web;
 
 namespace AuthSystem.Data.Controller
 {
@@ -94,9 +95,11 @@ namespace AuthSystem.Data.Controller
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
             {
+                var maps = System.Net.WebUtility.HtmlDecode(dr["Map"].ToString());
+                var maps_ = System.Net.WebUtility.HtmlEncode(dr["Map"].ToString());
                 var item = new BusinessModelVM();
                 item.Id = dr["Id"].ToString();
-                item.Map = dr["Map"].ToString();
+                item.Map = maps_;
                 item.FilePath = dr["FilePath"].ToString();
                 item.BusinessID = dr["BusinessID"].ToString();
                 item.DateCreated =Convert.ToDateTime( dr["DateCreated"].ToString()).ToString("MM/dd/yyyy");
@@ -121,6 +124,7 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
+       
         [HttpGet]
         public async Task<IActionResult> BusinessCardList()
         {
