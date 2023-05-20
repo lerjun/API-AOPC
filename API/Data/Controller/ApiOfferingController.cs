@@ -353,7 +353,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             }
             else
             {
-                FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image;
+                FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image + ".jpg";
             }
             if (dt.Rows.Count == 0)
             {

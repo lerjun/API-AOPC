@@ -441,7 +441,7 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                                                  UsersModel ON tbl_UserPrivilegeModel.UserID = UsersModel.Id INNER JOIN
                                                  tbl_PrivilegeModel ON tbl_UserPrivilegeModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
                                                  tbl_VendorModel ON tbl_PrivilegeModel.VendorID = tbl_VendorModel.Id
-                        WHERE                    (UsersModel.EmployeeID = '" + data.EmployeeID + "') and UsersModel.Active = 1";
+                        WHERE                    (UsersModel.EmployeeID = '" + data.EmployeeID + "') and UsersModel.Active = 1 and tbl_PrivilegeModel.Active = 5";
 
             }
             else
@@ -452,7 +452,7 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                                                  UsersModel ON tbl_UserPrivilegeModel.UserID = UsersModel.Id INNER JOIN
                                                  tbl_PrivilegeModel ON tbl_UserPrivilegeModel.PrivilegeId = tbl_PrivilegeModel.Id LEFT OUTER JOIN
                                                  tbl_VendorModel ON tbl_PrivilegeModel.VendorID = tbl_VendorModel.Id
-                        WHERE        (tbl_PrivilegeModel.isVIP <> 1) and  (UsersModel.EmployeeID = '" + data.EmployeeID + "') and UsersModel.Active = 1";
+                        WHERE        (tbl_PrivilegeModel.isVIP <> 1) and  (UsersModel.EmployeeID = '" + data.EmployeeID + "') and UsersModel.Active = 1 and tbl_PrivilegeModel.Active = 5";
 
             }
             DataTable table = db.SelectDb(sql).Tables[0];

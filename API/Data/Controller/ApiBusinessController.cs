@@ -124,7 +124,43 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
-       
+        public class BusinessArray
+        {
+            public string Id { get; set; }
+            public string Gallery { get; set; }
+
+        }
+        public class Bid
+        {
+            public int id { get; set; }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> BusinessArrray(Bid data)
+        {
+            int ctr = 0;
+            string sql = $@"SELECT        tbl_BusinessModel.Id,tbl_BusinessModel.Gallery
+                        FROM            tbl_BusinessModel 
+                        WHERE        (tbl_BusinessModel.Active = 5) and Id='"+data.id+"'";
+            var result = new List<BusinessArray>();
+            DataTable table = db.SelectDb(sql).Tables[0];
+ 
+            foreach (DataRow dr in table.Rows)
+            {
+                var gal = dr["Gallery"].ToString();
+                string[] gallist = gal.Split(";");
+                foreach (string author in gallist)
+                {
+                    var item = new BusinessArray();
+                    item.Id = ctr.ToString();
+                    item.Gallery = author;
+                    result.Add(item);
+                    ctr++;
+                }
+            }
+            return Ok(result);
+        }
+
         [HttpGet]
         public async Task<IActionResult> BusinessCardList()
         {
@@ -197,9 +233,10 @@ namespace AuthSystem.Data.Controller
                     }
                     else
                     {
-                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image +".jpg";
+                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg.Replace(" ", "%20"); ;
+                        //FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image +".jpg";
                     }
-                  
+                  //
 
                     if (data.Id == 0)
                     {
