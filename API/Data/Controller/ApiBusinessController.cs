@@ -41,13 +41,10 @@ namespace AuthSystem.Data.Controller
 
         public ApiBusinessController(IOptions<AppSettings> appSettings, ApplicationDbContext context, JwtAuthenticationManager jwtAuthenticationManager)
         {
-   
             _context = context;
             _appSettings = appSettings.Value;
             this.jwtAuthenticationManager = jwtAuthenticationManager;
-   
         }
-
         [HttpPost]
         public async Task<IActionResult> GetBusinessFByBID(BusinessIDVM data)
         {
@@ -85,12 +82,12 @@ namespace AuthSystem.Data.Controller
                          tbl_BusinessModel.Url, tbl_BusinessModel.Email, tbl_BusinessModel.Cno, tbl_BusinessModel.Address, tbl_BusinessModel.Description, tbl_BusinessModel.BusinessName, tbl_BusinessModel.Id, 
                          tbl_BusinessTypeModel.BusinessTypeName, tbl_BusinessLocationModel.Country, tbl_BusinessLocationModel.City, tbl_BusinessLocationModel.PostalCode, tbl_StatusModel.Name AS Status, 
                          tbl_BusinessLocationModel.Id AS blocid, tbl_BusinessTypeModel.Id AS btypeid
-                        FROM            tbl_BusinessModel INNER JOIN
+                         FROM            tbl_BusinessModel INNER JOIN
                                                  tbl_BusinessTypeModel ON tbl_BusinessModel.TypeId = tbl_BusinessTypeModel.Id LEFT OUTER JOIN
                                                  tbl_BusinessLocationModel ON tbl_BusinessModel.LocationId = tbl_BusinessLocationModel.Id LEFT OUTER JOIN
                                                  tbl_StatusModel ON tbl_BusinessModel.Active = tbl_StatusModel.Id
-                        WHERE        (tbl_BusinessModel.Active = 5)
-                        ORDER BY tbl_BusinessModel.Id DESC";
+                         WHERE        (tbl_BusinessModel.Active = 5)
+                         ORDER BY tbl_BusinessModel.Id DESC";
             var result = new List<BusinessModelVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
@@ -140,8 +137,8 @@ namespace AuthSystem.Data.Controller
         {
             int ctr = 0;
             string sql = $@"SELECT        tbl_BusinessModel.Id,tbl_BusinessModel.Gallery
-                        FROM            tbl_BusinessModel 
-                        WHERE        (tbl_BusinessModel.Active = 5) and Id='"+data.id+"'";
+                         FROM            tbl_BusinessModel 
+                         WHERE        (tbl_BusinessModel.Active = 5) and Id='"+data.id+"'";
             var result = new List<BusinessArray>();
             DataTable table = db.SelectDb(sql).Tables[0];
  
@@ -152,15 +149,19 @@ namespace AuthSystem.Data.Controller
                 foreach (string author in gallist)
                 {
                     var item = new BusinessArray();
+                    if(author != "")
+                    {
                     item.Id = ctr.ToString();
                     item.Gallery = author;
                     result.Add(item);
                     ctr++;
+
+                    }
+                   
                 }
             }
             return Ok(result);
         }
-
         [HttpGet]
         public async Task<IActionResult> BusinessCardList()
         {
@@ -181,28 +182,30 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
-       
         [HttpPost]
-        public async  Task<IActionResult> SaveBusiness(BusinessModel data)
+        public async Task<IActionResult> SaveBusiness(BusinessModel data)
         {
-        //    try
-        //    {
-        //        string result = "";
-        //        GlobalVariables gv = new GlobalVariables();
-        //        _global.Status = gv.BusinessRegister(data,  _context);
-        //    }
 
-        //    catch (Exception ex)
-        //    {
-        //        string status = ex.GetBaseException().ToString();
-        //    }
-        //     return Content(_global.Status);
-
-              string result = "";
-        string query = "";
+            string gallery = "";
+            string result = "";
+            string query = "";
             try
             {
-
+                if (data.Gallery == null || data.Gallery == "")
+                {
+                    gallery = "";
+                }
+                else
+                {
+                    List<string> stringList = data.Gallery.Split('%').ToList();
+                   for(int x=0;x<stringList.Count;x++)
+                    {
+                        if (stringList[x] !="")
+                        {
+                            gallery += stringList[x]+";";
+                        }
+                    }
+                }
                 if (data.BusinessName.Length != 0 || data.Description.Length != 0 )
                 {
                     string sql = "";
@@ -236,7 +239,6 @@ namespace AuthSystem.Data.Controller
                         FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg.Replace(" ", "%20"); ;
                         //FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image +".jpg";
                     }
-                  //
 
                     if (data.Id == 0)
                     {
@@ -262,7 +264,7 @@ namespace AuthSystem.Data.Controller
                     {
                         query += $@"update  tbl_BusinessModel set BusinessName ='"+data.BusinessName+"', TypeId ='"+data.TypeId+"', LocationId ='"+data.LocationID+"', Description ='"+data.Description
                             +"', Address ='"+data.Address+"' , Cno ='"+data.Cno+"', Email ='"+data.Email+"', Url ='"+data.Url+"' , Services ='"+data.Services+"', FeatureImg ='"
-                            + FeaturedImage + "', Gallery ='' , Active ='5' ,FilePath ='' , Map ='"+data.Map+"'  where  Id='" + data.Id + "' ";
+                            + FeaturedImage + "', Gallery ='"+gallery+"' , Active ='5' ,FilePath ='' , Map ='"+data.Map+"'  where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
 
                         result = "Updated Successfully";
@@ -285,7 +287,6 @@ namespace AuthSystem.Data.Controller
                     }
                     return Ok(result);
         }
-
         [HttpPost]
         public async Task<IActionResult> UpdateBusiness(BusinessModel data)
         {
@@ -302,24 +303,6 @@ namespace AuthSystem.Data.Controller
             }
             return Content(_global.Status);
         }
-        //[HttpDelete]
-        //public async Task<IActionResult> DeleteBusiness(int id)
-        //{
-        //    try
-        //    {
-        //        var result = await _context.tbl_BusinessModel.FindAsync(id);
-        //        _context.tbl_BusinessModel.Remove(result);
-        //        await _context.SaveChangesAsync();
-        //        _global.Status = "Successfully Deleted.";
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _global.Status = ex.GetBaseException().ToString();
-        //    }
-
-        //    return Content(_global.Status);
-        //}
         public class DeleteB
         {
 

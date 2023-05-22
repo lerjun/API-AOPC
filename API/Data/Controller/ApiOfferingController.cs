@@ -212,7 +212,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
         [HttpGet]
         public async Task<IActionResult> UserListEmail()
         {
-            string sql = $@"select Concat (Fname , ' ' , Lname) as Fullname, Email from UsersModel where AllowEmailNotif =  1";
+            string sql = $@"select Concat (Fname , ' ' , Lname) as Fullname, Email from UsersModel where AllowEmailNotif =  1 and active = 1";
 
             DataTable table = db.SelectDb(sql).Tables[0];
             var result = new List<Userlist>();
@@ -353,7 +353,7 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             }
             else
             {
-                FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + res_image + ".jpg";
+                FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.ImgUrl.Replace(" ", "%20"); ;
             }
             if (dt.Rows.Count == 0)
             {

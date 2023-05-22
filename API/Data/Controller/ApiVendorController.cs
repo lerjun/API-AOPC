@@ -21,6 +21,7 @@ using Microsoft.Data.SqlClient;
 using static AuthSystem.Data.Controller.ApiUserAcessController;
 using System.Text;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static AuthSystem.Data.Controller.ApiBusinessController;
 
 namespace AuthSystem.Data.Controller
 {
@@ -46,7 +47,36 @@ namespace AuthSystem.Data.Controller
             this.jwtAuthenticationManager = jwtAuthenticationManager;
    
         }
+        [HttpPost]
+        public async Task<IActionResult> VendorGallery(Bid data)
+        {
+            int ctr = 0;
+            string sql = $@"SELECT        Id, Gallery
+                    FROM            tbl_VendorModel
+                    WHERE        (Status = 5) AND (Id = '" + data.id + "')";
+            var result = new List<BusinessArray>();
+            DataTable table = db.SelectDb(sql).Tables[0];
 
+            foreach (DataRow dr in table.Rows)
+            {
+                var gal = dr["Gallery"].ToString();
+                string[] gallist = gal.Split(";");
+                foreach (string author in gallist)
+                {
+                    var item = new BusinessArray();
+                    if (author != "")
+                    {
+                        item.Id = ctr.ToString();
+                        item.Gallery = author;
+                        result.Add(item);
+                        ctr++;
+
+                    }
+
+                }
+            }
+            return Ok(result);
+        }
         [HttpGet]
         public async Task<IActionResult> VendorList()
         {
@@ -226,11 +256,26 @@ FROM            tbl_VendorModel INNER JOIN
         {
 
 
+            string gallery = "";
             string result = "";
             string query = "";
             try
             {
-
+                if (data.Gallery == null || data.Gallery == "")
+                {
+                    gallery = "";
+                }
+                else
+                {
+                    List<string> stringList = data.Gallery.Split('%').ToList();
+                    for (int x = 0; x < stringList.Count; x++)
+                    {
+                        if (stringList[x] != "")
+                        {
+                            gallery += stringList[x] + ";";
+                        }
+                    }
+                }
                 if (data.VendorName.Length != 0 || data.Description.Length != 0 )
                 {
                     string FeaturedImage = "";
@@ -241,7 +286,7 @@ FROM            tbl_VendorModel INNER JOIN
                     }
                     else
                     {
-                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg;
+                        FeaturedImage = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.FeatureImg.Replace(" ", "%20");
                     }
                     if (data.VendorLogo == null)
                     {
@@ -249,7 +294,7 @@ FROM            tbl_VendorModel INNER JOIN
                     }
                     else
                     {
-                        Logo = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.VendorLogo;
+                        Logo = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.VendorLogo.Replace(" ", "%20");
                     }
 
                     if (data.Id == 0)
@@ -275,7 +320,7 @@ FROM            tbl_VendorModel INNER JOIN
                     else
                     {
                         query += $@"update  tbl_VendorModel set VendorName='" + data.VendorName + "' , BusinessTypeId='" + data.BusinessTypeId + "' , Description='" + data.Description + "' , Services='" + data.Services
-                            + "' , WebsiteUrl='" + data.WebsiteUrl + "' , FeatureImg='" + FeaturedImage + "' , Gallery='" + data.Gallery + "' , Cno='" + data.Cno + "', Email='" + data.Email + "', VideoUrl='"
+                            + "' , WebsiteUrl='" + data.WebsiteUrl + "' , FeatureImg='" + FeaturedImage + "' , Gallery='" + gallery + "' , Cno='" + data.Cno + "', Email='" + data.Email + "', VideoUrl='"
                             + data.VideoUrl + "' , VrUrl='" + data.VrUrl + "'  , BusinessLocationID='" + data.BusinessLocationID + "' , Status='5' , FileUrl='" + data.FileUrl
                             + "' , Map='" + data.Map + "' , VendorLogo='" + Logo + "' , Address='" + data.Address + "'  where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query); 

@@ -47,9 +47,9 @@ namespace AuthSystem.Data.Controller
         {
             string sql = $@"SELECT        tbl_BusinessLocationModel.DateCreated, tbl_BusinessLocationModel.PostalCode, tbl_BusinessLocationModel.City, tbl_BusinessLocationModel.Country, tbl_BusinessLocationModel.Id, tbl_StatusModel.Name AS Status, 
                          tbl_BusinessLocationModel.BusinessLocID
-                        FROM            tbl_BusinessLocationModel INNER JOIN
+                         FROM            tbl_BusinessLocationModel INNER JOIN
                                                  tbl_StatusModel ON tbl_BusinessLocationModel.Active = tbl_StatusModel.Id
-                        WHERE        (tbl_BusinessLocationModel.Active = 5)";
+                         WHERE        (tbl_BusinessLocationModel.Active = 5)";
             var result = new List<BusinesslocationVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
             foreach (DataRow dr in table.Rows)
