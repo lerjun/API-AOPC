@@ -177,22 +177,7 @@ WHERE        (tbl_CorporateModel.Status = 1)";
             }
              return Content(_global.Status);
         }
-        //public class CorporateModel
-        //{
-
-        //    public int Id { get; set; }
-        //    public int Count { get; set; }
-        //    public int VipCount { get; set; }
-
-        //    public string CorporateName { get; set; }
-        //    public string? Address { get; set; }
-        //    public string? CNo { get; set; }
-        //    public string? EmailAddress { get; set; }
-        //    public string? Description { get; set; }
-        //    public string? MembershipID { get; set; }
-        //    public int? Status { get; set; }
-
-        //}
+  
         [HttpPost]
         public async Task<IActionResult> UpdateCorporate(CorporateModel data)
         {
@@ -214,7 +199,16 @@ WHERE        (tbl_CorporateModel.Status = 1)";
                     }
                     else
                     {
-
+                        string sql = $@"select Id from UsersModel where CorporateID='" + data.Id + "'";
+                        DataTable dt = db.SelectDb(sql).Tables[0];
+                        if(dt.Rows.Count != 0)
+                        { 
+                        foreach(DataRow dr in dt.Rows)
+                        {
+                            query += $@"update  tbl_UserMembershipModel set MembershipID='" + data.MembershipID + "' where  UserID='" + dr["Id"].ToString() + "' ";
+                            db.AUIDB_WithParam(query);
+                        }
+                        }
                         query += $@"update  tbl_CorporateModel set CorporateName='" + data.CorporateName + "',Address='" + data.Address + "' " +
                                ",CNo='" + data.CNo + "' , EmailAddress='" + data.EmailAddress + "' , MembershipID='" + data.MembershipID + "', Count='"+data.Count+"', VipCount='"+data.VipCount+"' where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);

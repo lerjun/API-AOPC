@@ -269,8 +269,27 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new Registerstats();
             string imgfile = "";
+            //if (data.TMC == null || data.TMC == "")
+            //{
+            //    tmc = "";
+            //}
+            //else
+            //{
+            //    List<string> stringList = data.TMC.Split(';').ToList();
+            //    tmc = stringList[0];
+            //    for (int x = 1; x < stringList.Count; x++)
+            //    {
+            //        if (stringList[x] != "")
+            //        {
+            //            tmc += stringList[x] + "^";
+            //        }
+            //    }
+            //}
+            string tmc = data.TMC.Remove(data.TMC.Length - 1);
+            string mecha = data.Mechanics.Remove(data.Mechanics.Length - 1);
             if (dt.Rows.Count == 0)
             {
+               
                 if (data.ImgUrl== null || data.ImgUrl == "")
                 {
                     imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/defaultavatar.png";
@@ -280,7 +299,7 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                     imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/" +data.ImgUrl;
                 }
                 string OTPInsert = $@"insert into tbl_PrivilegeModel (Title,Description,Mechanics,Validity,NoExpiry,ImgUrl,VendorID,isVIP,BusinessTypeID,TMC,Active) values 
-                                     ('"+data.Title+"','"+data.Description+"','"+data.Mechanics+"','"+data.Validity + "','"+data.noExpiry + "','"+ imgfile + "','"+data.VendorID + "','"+data.isVIP + "','"+data.BusinessTypeID + "','"+data.TMC + "','"+data.Active+"')";
+                                     ('"+data.Title+"','"+data.Description+"','"+mecha+"','"+data.Validity + "','"+data.noExpiry + "','"+ imgfile + "','"+data.VendorID + "','"+data.isVIP + "','"+data.BusinessTypeID + "','"+tmc+ "','"+data.Active+"')";
                 db.AUIDB_WithParam(OTPInsert);
                 result.Status = "Successfully Added";
 
@@ -298,8 +317,8 @@ ORDER BY tbl_PrivilegeModel.Id DESC";
                 {
                     imgfile = "https://www.alfardanoysterprivilegeclub.com/assets/img/" + data.ImgUrl;
                 }
-                string OTPInsert = $@"update tbl_PrivilegeModel set Title='"+data.Title+"', Description='"+data.Description+"' , Mechanics='"+data.Mechanics+"', Validity='"+data.Validity+"', NoExpiry='"+data.noExpiry+"', ImgUrl='"+ imgfile + "', " +
-                    "VendorID='"+data.VendorID+"', isVIP='"+data.isVIP+"', BusinessTypeID='"+data.BusinessTypeID+"', TMC='"+data.TMC+"' where id =" + data.Id + "";
+                string OTPInsert = $@"update tbl_PrivilegeModel set Title='"+data.Title+"', Description='"+data.Description+"' , Mechanics='"+mecha+"', Validity='"+data.Validity+"', NoExpiry='"+data.noExpiry+"', ImgUrl='"+ imgfile + "', " +
+                    "VendorID='"+data.VendorID+"', isVIP='"+data.isVIP+"', BusinessTypeID='"+data.BusinessTypeID+"', TMC='"+tmc+"' where id =" + data.Id + "";
                 db.AUIDB_WithParam(OTPInsert);
                 result.Status = "Successfully Updated";
 

@@ -11,6 +11,7 @@ namespace AuthSystem.ViewModel
         public string? Description { get; set; }
 
         public string? FeatureImg { get; set; }
+        public string? Services { get; set; }
 
         public string? Status { get; set; }
 

@@ -939,7 +939,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                             password = "";
                         }
                         query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Password='" + password + "' ,Username='" + data.Username + "'" +
-                               ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' , PositionID='" + data.PositionID + "'" +
+                               ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' , isVIP='" + data.isVIP + "', PositionID='" + data.PositionID + "'" +
                                ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
                                "where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);

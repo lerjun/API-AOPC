@@ -58,6 +58,7 @@ namespace AuthSystem.Data.Controller
             {
      
                 item.Description = dr["Description"].ToString();
+                item.Services = dr["Services"].ToString();
                 item.FeatureImg = dr["FeatureImg"].ToString();
                 item.Status = dr["Status"].ToString();
                 item.HotelName = dr["HotelName"].ToString();

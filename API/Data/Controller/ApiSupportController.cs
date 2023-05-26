@@ -102,7 +102,7 @@ namespace AuthSystem.Data.Controller
             GlobalVariables gv = new GlobalVariables();
 
             string sql = $@"SELECT     Count(*)as count, Actions,Business,Module,tbl_audittrailModel.DateCreated
-                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%View%' and module ='Shops & Services' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                         FROM         tbl_audittrailModel  WHERE Actions LIKE '%View%' and module ='Shops & Services'
                          GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<MostClickStoreModel>();
@@ -153,7 +153,7 @@ namespace AuthSystem.Data.Controller
             GlobalVariables gv = new GlobalVariables();
 
             string sql = $@"SELECT     Count(*)as count, Actions,Business,Module,tbl_audittrailModel.DateCreated
-                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Rooms & Suites' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Rooms & Suites' 
                         GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
             int total = 0;
@@ -206,7 +206,7 @@ namespace AuthSystem.Data.Controller
             GlobalVariables gv = new GlobalVariables();
 
             string sql = $@"SELECT     Count(*)as count, Actions,Business,Module,tbl_audittrailModel.DateCreated
-                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' and  tbl_audittrailModel.DateCreated >= DATEADD(day,-7, GETDATE())
+                        FROM         tbl_audittrailModel  WHERE Actions LIKE '%Viewed%' and module ='Food & Beverage' 
                         GROUP BY    Actions,Business,Module,tbl_audittrailModel.DateCreated order by count desc";
             DataTable dt = db.SelectDb(sql).Tables[0];
               var result = new List<MostClickRestoModel>();
@@ -259,30 +259,56 @@ namespace AuthSystem.Data.Controller
         public async Task<IActionResult> GetCallToActionsList()
         {
 
-            string sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
-                            FROM            tbl_audittrailModel
-                            WHERE        (Module = 'Mail')
-                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Call')
-                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*)AS Book , DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book') 
-                            GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1   where Module='Hotel' or Module='Food & Beverage'  
-                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business  order by Mail.Email desc";
+            string sql = $@"SELECT        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module AS Category, Book.DateCreated
+FROM            (SELECT        Business, COUNT(*) AS Email, DateCreated
+                          FROM            tbl_audittrailModel
+                          WHERE        (Module = 'Mail')
+                          GROUP BY Business, DateCreated) AS Mail LEFT OUTER JOIN
+                             (SELECT        Business, COUNT(*) AS Call, DateCreated
+                               FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                               WHERE        (Module = 'Call')
+                               GROUP BY Business, DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                             (SELECT        Business, COUNT(*) AS Book, DateCreated
+                               FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                               WHERE        (Module = 'Book')
+                               GROUP BY Business, DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                             (SELECT        Business, Module
+                               FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                               WHERE       Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
+                               GROUP BY Business, Module) AS Category ON Book.Business = Category.Business
+ORDER BY Mail.Email DESC";
             DataTable dt = db.SelectDb(sql).Tables[0];
             var result = new List<CallToActionsModel>();
             foreach (DataRow dr in dt.Rows)
             {
-
+                string cat = "";
                 string call = dr["Call"].ToString() == "" ? "0" : dr["Call"].ToString();
                 string book = dr["Book"].ToString() == "" ? "0" : dr["Book"].ToString();
-                string cat = dr["Category"].ToString() == "" ? "" : dr["Category"].ToString() == "Food & Beverage" ? "Restaurant" : dr["Category"].ToString() == "Hotel" ? "Hotel" : "";
+                //string cat = dr["Category"].ToString() == "" ? "" : dr["Category"].ToString() == "Food & Beverage" ? "Restaurant" : dr["Category"].ToString() == "Hotel" ? "Hotel" : "";
+                if (dr["Category"].ToString() == "Food & Beverage")
+                {
+                    cat = "Restaurant";
+                }
+                else if (dr["Category"].ToString() == "Hotel")
+                {
+                    cat = "Hotel";
+                }
+                else if (dr["Category"].ToString() == "Access to co-working spaces")
+                {
+                    cat = "Access to co-working spaces";
+                }
+                else if (dr["Category"].ToString() == "Health")
+                {
+                    cat = "Health";
+                }
+                else if (dr["Category"].ToString() == "Shops & Services")
+                {
+                    cat = "Shops & Services";
+                } 
+                else if (dr["Category"].ToString() == "News")
+                {
+                    cat = "News";
+                }
                 string mail = dr["Email"].ToString() == "" ? "0" : dr["Email"].ToString();
                 var item = new CallToActionsModel();
                 item.Business = dr["Business"].ToString();
@@ -319,7 +345,7 @@ namespace AuthSystem.Data.Controller
                             WHERE        (Module = 'Book') 
                             GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
                             (SELECT        Business, Module
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1   where Module='Hotel' or Module='Food & Beverage'  
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1  where  Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
                             GROUP BY Business, Module) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
                 }
                 else if(data.day == 0 && data.category != "0" )
@@ -338,8 +364,8 @@ namespace AuthSystem.Data.Controller
                             WHERE        (Module = 'Book') 
                             GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
                             (SELECT        Business, Module
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  
-                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business where Category.Module = '"+data.category+"' order by Mail.Email desc ";
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1  where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
+                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business where Category.Module = '" +data.category+"' order by Mail.Email desc ";
                 }
                 else if (data.day != 0 && data.category == "0" )
                 {
@@ -356,7 +382,7 @@ namespace AuthSystem.Data.Controller
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Book') and DateCreated >= DATEADD(day,-"+day+", GETDATE()) " +
                             "GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN (SELECT        Business, Module " +
-                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage' " +
+                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' " +
                             " GROUP BY Business, Module) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
                 }
                 else
@@ -374,7 +400,7 @@ namespace AuthSystem.Data.Controller
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Book') and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
                             "GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN (SELECT        Business, Module " +
-                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage' " +
+                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News'  " +
                             " GROUP BY Business, Module) AS Category ON Book.Business = Category.Business  where Category.Module = '"+data.category+"' order by Mail.Email desc ";
                 }
                 
@@ -429,6 +455,7 @@ namespace AuthSystem.Data.Controller
 
             return Ok(result);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetNewRegisteredWeekly()
         {
@@ -976,6 +1003,37 @@ namespace AuthSystem.Data.Controller
                 return BadRequest("ERROR");
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> PostEmailbyEmpID(emailpost data)
+        {
+  
+
+            try
+            {
+
+                string sql = $@"select Email from UsersModel where EmployeeID ='"+data.EmployeeID+"'";
+
+                DataTable table = db.SelectDb(sql).Tables[0];
+                var item = new BusinessCardVM();
+                var result = new emailpost();
+                foreach (DataRow dr in table.Rows)
+                {
+                    result.EmailAddress = dr["Email"].ToString();
+
+                }
+
+                return Ok(result);
+
+
+
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest("ERROR");
+            }
+        }
         #endregion
         #region Model
         public class UserFilterday
@@ -996,6 +1054,11 @@ namespace AuthSystem.Data.Controller
         } public class monthsdate
         {
             public string label { get; set; }
+
+        }public class emailpost
+        {
+            public string EmailAddress { get; set; }
+            public string EmployeeID { get; set; }
 
         }
         public class Usertotalcount
