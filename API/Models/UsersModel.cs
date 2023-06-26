@@ -61,7 +61,10 @@ namespace AuthSystem.Models
         [Column(TypeName = "int")]
         public int? Active { get; set; }
         [Column(TypeName = "int")]
-        public int? isVIP { get; set; }
+        public int? isVIP { get; set; }        
+        
+        [Column(TypeName = "int")]
+        public int? AllowEmailNotif { get; set; }
 
     }
 }

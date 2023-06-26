@@ -146,13 +146,13 @@ WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 2)";
 
             string sql = $@"SELECT        UsersModel.Username, UsersModel.Fname, UsersModel.Lname, UsersModel.Email, UsersModel.Gender, UsersModel.EmployeeID, tbl_PositionModel.Name AS Position, tbl_CorporateModel.CorporateName, 
                          tbl_UserTypeModel.UserType, UsersModel.Fullname, UsersModel.Id, UsersModel.DateCreated, tbl_PositionModel.Id AS PositionID, tbl_CorporateModel.Id AS CorporateID, tbl_StatusModel.Name AS status, UsersModel.isVIP, 
-                         UsersModel.FilePath
+                         UsersModel.FilePath, UsersModel.AllowEmailNotif
 FROM            UsersModel LEFT OUTER JOIN
                          tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id LEFT OUTER JOIN
                          tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id LEFT OUTER JOIN
                          tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id LEFT OUTER JOIN
                          tbl_StatusModel ON UsersModel.Active = tbl_StatusModel.Id
-WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
+WHERE        (UsersModel.Active IN (1, 2, 9, 10)) AND (UsersModel.Type = 3)";
             var result = new List<UserVM>();
             DataTable table = db.SelectDb(sql).Tables[0];
 
@@ -176,6 +176,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) AND (UsersModel.Type = 3) ";
                 item.status = dr["status"].ToString();
                 item.FilePath = dr["FilePath"].ToString();
                 item.isVIP = dr["isVIP"].ToString();
+                item.AllowNotif = dr["AllowEmailNotif"].ToString();
 
                 result.Add(item);
             }
@@ -458,62 +459,135 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                 result.otp = "Error";
                 return BadRequest(result);
             }
-            return Ok(result);
+
         }
-  
+        public class notifstats
+        {
+            public int userid { get; set; }
+
+        }   
+        public class notifresult
+        {
+            public string notif { get; set; }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> Allownotif(notifstats model)
+        {
+            var result = new notifresult();
+            try
+            {
+                string query = "";
+
+                string sql = $@"select * from UsersModel where Id ='" + model.userid + "' AND Active=1";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                if (dt.Rows.Count > 0)
+                {
+                    query += $@"select allowemailnotif from UsersModel where Id ='" + model.userid + "' AND Active=1";
+ 
+                    DataTable dt1 = db.SelectDb(query).Tables[0];
+                    result.notif = dt1.Rows[0]["allowemailnotif"].ToString() ;
+                    return Ok(result);
+                }
+                else
+                {
+                    return BadRequest("error");
+                }
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest("error");
+            }
+
+        }
         [HttpPost]
         public IActionResult FinalUserRegistration(UsersModel data)
         {
-            
-           
 
-                string sql = $@"SELECT        UsersModel.Id, UsersModel.Username, UsersModel.Password, UsersModel.Fullname, UsersModel.Active, tbl_UserTypeModel.UserType, tbl_CorporateModel.CorporateName, tbl_PositionModel.Name, UsersModel.JWToken
+            string sql = "";
+            var result = new Registerstats();
+            string sql0 = $@"SELECT * from UsersModel where Active=1 and LOWER(Email) ='" + data.Email + "'";
+            DataTable dt0 = db.SelectDb(sql0).Tables[0];
+            if (dt0.Rows.Count != 0)
+            {
+             
+                result.Status = "Invalid";
+                result.message = "Email is already in used";
+                return Ok(result);
+            }
+            else
+            { 
+                sql = $@"SELECT        UsersModel.Id, UsersModel.Username,UsersModel.Email, UsersModel.Password, UsersModel.Fullname, UsersModel.Active, tbl_UserTypeModel.UserType, tbl_CorporateModel.CorporateName, tbl_PositionModel.Name, UsersModel.JWToken
                         FROM            UsersModel INNER JOIN
                                                  tbl_UserTypeModel ON UsersModel.Type = tbl_UserTypeModel.Id INNER JOIN
                                                  tbl_CorporateModel ON UsersModel.CorporateID = tbl_CorporateModel.Id INNER JOIN
                                                  tbl_PositionModel ON UsersModel.PositionID = tbl_PositionModel.Id
-                        WHERE     (UsersModel.Active in(9,10, 2) and LOWER(Email) ='" + data.Email.ToLower()+"' and LOWER(Fname) ='"+data.Fname.ToLower()+"' and LOWER(Lname) ='"+data.Lname.ToLower()+"')";
+                        WHERE     (UsersModel.Active in(9,10,2) and LOWER(Email) ='" + data.Email.ToLower()+"' and LOWER(Fname) ='"+data.Fname.ToLower()+"' and LOWER(Lname) ='"+data.Lname.ToLower()+"')";
                 DataTable dt = db.SelectDb(sql).Tables[0];
-                var result = new Registerstats();
                 if (dt.Rows.Count > 0)
-                 {
-                    string EncryptPword = Cryptography.Encrypt(data.Password);
+                {
 
-                    string query = $@"update  UsersModel set Username='"+data.Username+"',Password='"+EncryptPword+"', Fname='"+data.Fname+"',Lname='"+data.Lname+"',cno='"+data.Cno+"', Active=10 , Address ='"+data.Address+"' where  Id='" + dt.Rows[0]["Id"].ToString() +"' ";
-                    db.AUIDB_WithParam(query);
-                string message = "Welcome to Alfardan Oyster Privilege Application to confirm your registration here's your one time password " + data.OTP + ". Please do not share.";
-                string username = "Carlo26378";
-                string password = "d35HV7kqQ8Hsf24";
-                string sid = "Oyster Club";
-                string type = "N";
+              
+                        string EncryptPword = Cryptography.Encrypt(data.Password);
 
-                var url = "https://api.smscountry.com/SMSCwebservice_bulk.aspx?User="+ username + "&passwd="+password+"&mobilenumber="+data.Cno+"&message="+message+"&sid="+sid+"&mtype="+type+"";
-                //    string response = url;
+                        string query = $@"update  UsersModel set Username='" + data.Username + "',Password='" + EncryptPword + "', Fname='" + data.Fname + "',Lname='" + data.Lname + "',cno='" + data.Cno + "', Active=10 , Address ='" + data.Address + "' where  Id='" + dt.Rows[0]["Id"].ToString() + "' ";
+                        db.AUIDB_WithParam(query);
+                        string message = "Welcome to Alfardan Oyster Privilege Application to confirm your registration here's your one time password " + data.OTP + ". Please do not share.";
+                        string username = "Carlo26378";
+                        string password = "d35HV7kqQ8Hsf24";
+                        string sid = "Oyster Club";
+                        string type = "N";
 
-                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-                //optional
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                Stream stream = response.GetResponseStream();
-                ////gv.AudittrailLogIn("Successfully Registered", "User Registration Form",data.Id.ToString(),7);
-                string OTPInsert = $@"insert into tbl_RegistrationOTPModel (email,OTP,status) values ('"+data.Email+"','"+data.OTP+"','10')";
-                    db.AUIDB_WithParam(OTPInsert);
-                    result.Status = "Waiting for Verification";
+                        var url = "https://api.smscountry.com/SMSCwebservice_bulk.aspx?User=" + username + "&passwd=" + password + "&mobilenumber=" + data.Cno + "&message=" + message + "&sid=" + sid + "&mtype=" + type + "";
+                        //    string response = url;
 
-                    return Ok(result);
+                        HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                        //optional
+                        HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                        Stream stream = response.GetResponseStream();
+                        ////gv.AudittrailLogIn("Successfully Registered", "User Registration Form",data.Id.ToString(),7);
+                        string OTPInsert = $@"insert into tbl_RegistrationOTPModel (email,OTP,status) values ('" + data.Email + "','" + data.OTP + "','10')";
+                        db.AUIDB_WithParam(OTPInsert);
+
+                        result.Status = "Ok";
+                        result.message = "Waiting for Verification";
+                        return Ok(result);
+                    
+               
                     
                 }
                 else
                 {
-                //gv.AudittrailLogIn("Failed Registration", "User Registration Form", data.Id.ToString(), 8);
-
-                result.Status = "Invalid Registration";
-              
-                return BadRequest(result);
-            
+                string sql_query = "";
+                string invalid = "";
+                sql_query = $@"SELECT * from UsersModel where (UsersModel.Active in(9,10, 2) and LOWER(Email) ='" + data.Email.ToLower() + "')";
+                DataTable dt1 = db.SelectDb(sql_query).Tables[0];
+                if(dt1.Rows.Count == 0)
+                {
+                    invalid += "Email ";
                 }
-            
-
-            return Ok(result);
+                else
+                {
+                    sql_query = $@"SELECT * from UsersModel where (UsersModel.Active in(9,10, 2) and LOWER(Fname) ='" + data.Fname.ToLower() + "' and LOWER(Email) ='" + data.Email.ToLower() + "')";
+                    DataTable dt2 = db.SelectDb(sql_query).Tables[0];
+                    if (dt2.Rows.Count == 0)
+                    {
+                        invalid += "First name ";
+                    }
+                    sql_query = $@"SELECT * from UsersModel where (UsersModel.Active in(9,10, 2) and LOWER(Lname) ='" + data.Lname.ToLower() + "' and LOWER(Email) ='" + data.Email.ToLower() + "')";
+                    DataTable dt3 = db.SelectDb(sql_query).Tables[0];
+                    if (dt3.Rows.Count == 0)
+                    {
+                            invalid += invalid != "" ? " and Last Name" : "Last Name";
+                        //invalid += "Last name ";
+                    }
+                }
+                result.Status = "Invalid";
+                result.message = invalid +" is Invalid";
+                return Ok(result);
+                }
+            }
         }     
         [HttpPost]
         public IActionResult FinalUserRegistration2(UsersModel data)
@@ -640,6 +714,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
         public class Registerstats
         {
             public string Status { get; set; }
+            public string message { get; set; }
 
         }
         public class OTP
@@ -940,7 +1015,7 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
                         }
                         query += $@"update  UsersModel set Fname='" + data.Fname + "',Lname='" + data.Lname + "',Password='" + password + "' ,Username='" + data.Username + "'" +
                                ",cno='" + data.Cno + "' , Email='" + data.Email + "' , CorporateID='" + data.CorporateID + "' , isVIP='" + data.isVIP + "', PositionID='" + data.PositionID + "'" +
-                               ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "' " +
+                               ", Type='" + data.Type + "'  , Gender='" + data.Gender + "', FilePath='" + filepath + "' , EmployeeID='" + data.EmployeeID + "'  , AllowEmailNotif='" + data.AllowEmailNotif + "'  " +
                                "where  Id='" + data.Id + "' ";
                         db.AUIDB_WithParam(query);
 
@@ -1094,7 +1169,6 @@ WHERE        (UsersModel.Active IN (1, 2, 9,10)) and Type=1";
             }
 
 
-            return Ok(result);
         }
 
         [HttpPost]

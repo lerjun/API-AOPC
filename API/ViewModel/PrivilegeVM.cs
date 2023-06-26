@@ -9,9 +9,9 @@ namespace AuthSystem.Models
 
         public int Id { get; set; }
 
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public string? Validity { get; set; }
 
@@ -24,7 +24,7 @@ namespace AuthSystem.Models
         public int? isVIP { get; set; }
 
         public string? FeatureImg { get; set; }
-        
+
         public string? TMC { get; set; }
 
         public string? VendorID { get; set; }
@@ -41,7 +41,6 @@ namespace AuthSystem.Models
 
         public string? Mechanics { get; set; }
         public string? Active { get; set; }
-
 
     }
 }

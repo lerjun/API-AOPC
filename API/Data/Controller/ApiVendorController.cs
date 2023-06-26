@@ -22,7 +22,8 @@ using static AuthSystem.Data.Controller.ApiUserAcessController;
 using System.Text;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static AuthSystem.Data.Controller.ApiBusinessController;
-
+using MimeKit;
+using MailKit.Net.Smtp;
 namespace AuthSystem.Data.Controller
 {
 
@@ -205,6 +206,8 @@ FROM            tbl_VendorModel INNER JOIN
             }
             return Ok(result);
         }
+
+       
         [HttpPost]
         public async Task<IActionResult> DiscoverFilterbyBtypeAndBID(Discover data)
         {

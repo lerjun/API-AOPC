@@ -13,13 +13,28 @@ using System.Reflection;
 using System.IO;
 using AuthSystem.Data;
 using AuthSystem.Data.Class;
-using AuthSystem.ViewModel;
+using Newtonsoft.Json.Linq;
 using Microsoft.Data.SqlClient;
-using static AuthSystem.Data.Controller.ApiVendorController;
-using static AuthSystem.Data.Controller.ApiPrivilegeController;
+using AuthSystem.ViewModel;
+using static AuthSystem.Data.Controller.ApiRegisterController;
+using System.Web.Http.Results;
 using MimeKit;
+using MailKit.Net.Smtp;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static AuthSystem.Data.Controller.ApiUserAcessController;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Org.BouncyCastle.Ocsp;
+using static AuthSystem.Data.Controller.ApiNotifcationController;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Net.WebRequestMethods;
+using System.ComponentModel;
+using System.Drawing;
+using System.Reflection.Metadata;
+using System.Text.Unicode;
+using System.Web.Http.Services;
+using System.Xml.Linq;
+
 
 namespace AuthSystem.Data.Controller
 {
@@ -457,75 +472,245 @@ WHERE        (tbl_OfferingModel.OfferingID = '" +data.OfferingID + "') and Statu
             //db.AUIDB_WithParam(delete);
             var result = new Registerstats();
             string imgfile = "";
-
+            string status = "";
             foreach (var emp in IdList)
             {
-                //var emailsend = "https://www.alfardanoysterprivilegeclub.com/change-password/" + email;
-                //var message = new MimeMessage();
-                //message.From.Add(new MailboxAddress("AOPC Registration", "app@alfardan.com.qa"));
-                //message.To.Add(new MailboxAddress("", data.Email));
-                //message.Subject = "Email Registration Link";
-                //var bodyBuilder = new BodyBuilder();
-                //string img = "../img/AOPCBlack.jpg";
-                //bodyBuilder.HtmlBody = @"<!DOCTYPE html>
-                //<html lang=""en"">
-                //<head>
-                //    <meta charset=""UTF-8"">
-                //    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-                //    <meta http-equiv=""X-UA-Compatible"" content=""ie=edge"">
-                //    <title>Oyster Privilege Club</title>
-                //</head>
-                //<style>
-                //    @font-face {
-                //    font-family: 'Montserrat-Reg';
-                //    src: 
-                //    url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-Regular.ttf');
-                //    }
-                //    @font-face {
-                //        font-family: 'Montserrat-SemiBold';
-                //        src: url('{{ config('app.url') }}/assets/fonts/Montserrat/Montserrat-SemiBold.ttf');
-                //    }
-                //    body{
-                //        display: flex;
-                //        flex-direction: column;
-                //        font-family: 'Montserrat-Reg';
-                //    }
-                //    .img-container {
-                //        width: 200px;
-                //        margin:0 auto;
-                //    }
-                //    h3{
-                //        width: 400px;
-                //        text-align: center;
-                //        margin:20px auto;
-                //    }
-                //    p{
-                //        width: 400px;
-                //        margin:10px auto;
-                //    }
-                //</style>
-                //<body>
-                //    <div class=""img-container"">
-                //        <img width=""100%"" src=""https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC-low-black.png"" alt="""">
-                //    </div>
-                //    <h3>Reset Password</h3>
-                //    <p>We received a request to reset the password for your account. If you did not initiate this request, please ignore this email.</p>
-                //    <p>To reset your password, please click the following link:<a href=" + emailsend + ">" + emailsend + "</a>. This link will be valid for the next 24 hours.</p>" +
-                //    "<p>If you have any issues with resetting your password or need further assistance, please contact our support team at <b>app@alfaran.com.qa</b>.</p>" +
-                //"</body> " +
-                //"</html>";
-                //message.Body = bodyBuilder.ToMessageBody();
-                //using (var client = new SmtpClient())
-                //{
-                //    client.Connect("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-                //    client.Authenticate("app@alfardan.com.qa", "Oyster2023!");
-                //    client.Send(message);
-                //    client.Disconnect(true);
-                //    status = "Successfully sent registration email";
 
-                //}
-                //result.Status = "Success!";
-        
+                string offerid = emp.offerid;
+                string sql = $@"SELECT        tbl_OfferingModel.Id, tbl_OfferingModel.OfferingName, tbl_OfferingModel.ImgUrl, tbl_OfferingModel.PromoDesc, tbl_VendorModel.VendorName
+FROM            tbl_OfferingModel LEFT OUTER JOIN
+                         tbl_VendorModel ON tbl_OfferingModel.Id = tbl_VendorModel.Id where   tbl_OfferingModel.Id ='" + offerid + "'";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                string imgurl = dt.Rows[0]["ImgUrl"].ToString();
+                string offername = dt.Rows[0]["OfferingName"].ToString();
+                string PromoDesc = dt.Rows[0]["PromoDesc"].ToString();
+                string VendorName = dt.Rows[0]["VendorName"].ToString();
+                //var emailsend = "https://www.alfardanoysterprivilegeclub.com/change-password/" + emp.email;
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("AOPC New Offering", "app@alfardan.com.qa"));
+                message.To.Add(new MailboxAddress("", emp.email));
+                message.Subject = "New Offering Added";
+                var bodyBuilder = new BodyBuilder();
+                string img = "../img/AOPCBlack.jpg";
+                bodyBuilder.HtmlBody = @"<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset=""utf-8"" />
+    <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />
+    <title></title>
+    <meta name=""description"" content="""" />
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1"" />
+    <link rel=""stylesheet"" href="""" />
+  </head>
+  <body
+    style=""
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+    ""
+  >
+    <table style=""width: 500px; margin: 0 auto; border-collapse: collapse"">
+      <tr>
+        <td style=""text-align: center; padding: 0"">
+          <img
+            style=""width: 100%;object-fit:cover;height:200px""
+            src=""https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC%20Logo%20-%20Black.png""
+            alt=""Oyster Privilege""
+            width=""100%""
+          />
+        </td>
+      </tr>
+      <tr style=""background-color: #c89328; padding-top: 10px"">
+        <td style=""text-align: center; padding: 0; color: white"">
+          <h1>New Offering</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style=""text-align: center; padding: 0"">
+          <img
+            style=""height: 200px""
+            src=" + imgurl+" "+
+           " alt= "+
+           " width='100%' "+
+          "/>" +
+          "</td>" +
+          " </tr>" +
+          "<tr>" +
+          "<td>" +
+          " <h3 style='text-align: left; color: #c89328'>" +
+                    ""+offername+" <br />" +
+                    " <span style='font-size: 15px; color: black'>"+ VendorName + "</span>" +
+                    " </h3>" +
+                    "</td>" +
+                    " </tr>" +
+                    "<tr>" +
+                    "<td style='vertical-align: top'>" +
+                    " <p style='font-size: 12px; text-align: left'>" +
+                    ""+PromoDesc+" </p>" +
+                    "</td>" +
+                    "</tr>" +
+                    "<tr style='height: 100px'>" +
+                    " <td style='padding-top: 20px; text-align: center'>" +
+                    "<a style=''" +
+                    "background-color: #c89328;" +
+                    " padding-left: 20px;" +
+                    "padding-right: 20px;" +
+                    "padding-top: 10px;" +
+                    " padding-bottom: 10px;" +
+                    "border-radius: 10px;" +
+                    "box-shadow: 3px 2px 5px 3px rgb(220, 220, 220);" +
+                    "text-decoration: none;" +
+                    "color: white;' "+
+           " href='www.alfardanoysterprivilegeclub.com >Visit Oyster Privilege Club</a"+
+       " </td>" +
+       "</tr>" +
+       "<tr style='border-top: 1xp solid grey; padding-top: 20px'>" +
+                    "<td style='font-size: 10px; text-align: center'>" +
+                    "<a style='text-decoration: none; color: black' href=''>Copyright © Alfardan Properties</a >"+
+       " </td>" +
+       "<td></td>" +
+       "</tr>" +
+       " </table>" +
+       "<script src='' async defer></script>" +
+       "</body>" +
+       "</html>";
+                message.Body = bodyBuilder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    client.Connect("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    client.Authenticate("app@alfardan.com.qa", "Oyster2023!");
+                    client.Send(message);
+                    client.Disconnect(true);
+                    status = "Successfully sent registration email";
+
+                }
+                result.Status = "Email Successfully Sent";
+
+            }
+            return Ok(result);
+
+        }
+        [HttpPost]
+        public IActionResult SendEmailVendor(List<UserEmail> IdList)
+        {
+            //string delete = $@"delete tbl_MembershipPrivilegeModel where MembershipID='" + IdList[0].MembershipID + "'";
+            //db.AUIDB_WithParam(delete);
+            var result = new Registerstats();
+            string imgfile = "";
+            string status = "";
+            foreach (var emp in IdList)
+            {
+
+                string offerid = emp.offerid;
+                string sql = $@"SELECT        FeatureImg, VendorName, Id, Description
+                            FROM            tbl_VendorModel
+                            WHERE        (Id = '" + offerid + "')";
+                DataTable dt = db.SelectDb(sql).Tables[0];
+                string imgurl = dt.Rows[0]["FeatureImg"].ToString();
+                string offername = dt.Rows[0]["VendorName"].ToString();
+                string PromoDesc = dt.Rows[0]["Description"].ToString();
+                //var emailsend = "https://www.alfardanoysterprivilegeclub.com/change-password/" + emp.email;
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("AOPC New Vendor", "app@alfardan.com.qa"));
+                message.To.Add(new MailboxAddress("", emp.email));
+                message.Subject = "New Vendor Added";
+                var bodyBuilder = new BodyBuilder();
+                string img = "../img/AOPCBlack.jpg";
+                bodyBuilder.HtmlBody = @"<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset=""utf-8"" />
+    <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />
+    <title></title>
+    <meta name=""description"" content="""" />
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1"" />
+    <link rel=""stylesheet"" href="""" />
+  </head>
+  <body
+    style=""
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+    ""
+  >
+    <table style=""width: 500px; margin: 0 auto; border-collapse: collapse"">
+      <tr>
+        <td style=""text-align: center; padding: 0"">
+          <img
+            style=""width: 300px""
+            src=""https://www.alfardanoysterprivilegeclub.com/assets/img/AOPC%20Logo%20-%20Black.png""
+            alt=""Oyster Privilege""
+            width=""100%""
+          />
+        </td>
+      </tr>
+      <tr style=""background-color: #c89328; padding-top: 10px"">
+        <td style=""text-align: center; padding: 0; color: white"">
+          <h1>New Vendor</h1>
+        </td>
+      </tr>
+      <tr>
+        <td style=""text-align: center; padding: 0"">
+          <img
+            style=""width: 100%;object-fit:cover;height:200px""
+            src=" + imgurl + " " +
+           " alt= " +
+           " width='100%' " +
+          "/>" +
+          "</td>" +
+          " </tr>" +
+          "<tr>" +
+          "<td>" +
+          " <h3 style='text-align: left; color: #c89328'>" +
+                    "" + offername + " <br />" +
+                    " </h3>" +
+                    "</td>" +
+                    " </tr>" +
+                    "<tr>" +
+                    "<td style='vertical-align: top'>" +
+                    " <p style='font-size: 12px; text-align: left'>" +
+                    "" + PromoDesc + " </p>" +
+                    "</td>" +
+                    "</tr>" +
+                    "<tr style='height: 100px'>" +
+                    " <td style='padding-top: 20px; text-align: center'>" +
+                    "<a style=''" +
+                    "background-color: #c89328;" +
+                    " padding-left: 20px;" +
+                    "padding-right: 20px;" +
+                    "padding-top: 10px;" +
+                    " padding-bottom: 10px;" +
+                    "border-radius: 10px;" +
+                    "box-shadow: 3px 2px 5px 3px rgb(220, 220, 220);" +
+                    "text-decoration: none;" +
+                    "color: white;' " +
+           " href='www.alfardanoysterprivilegeclub.com >Visit Oyster Privilege Club</a" +
+       " </td>" +
+       "</tr>" +
+       "<tr style='border-top: 1xp solid grey; padding-top: 20px'>" +
+                    "<td style='font-size: 10px; text-align: center'>" +
+                    "<a style='text-decoration: none; color: black' href=''>Copyright © Alfardan Properties</a >" +
+       " </td>" +
+       "<td></td>" +
+       "</tr>" +
+       " </table>" +
+       "<script src='' async defer></script>" +
+       "</body>" +
+       "</html>";
+                message.Body = bodyBuilder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    client.Connect("smtp.office365.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    client.Authenticate("app@alfardan.com.qa", "Oyster2023!");
+                    client.Send(message);
+                    client.Disconnect(true);
+                    status = "Successfully sent registration email";
+
+                }
+                result.Status = "Email Successfully Sent";
+
             }
             return Ok(result);
 

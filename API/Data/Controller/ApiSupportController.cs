@@ -274,7 +274,7 @@ FROM            (SELECT        Business, COUNT(*) AS Email, DateCreated
                                GROUP BY Business, DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
                              (SELECT        Business, Module
                                FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                               WHERE       Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
+                               WHERE       Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' or Module='Wellness'
                                GROUP BY Business, Module) AS Category ON Book.Business = Category.Business
 ORDER BY Mail.Email DESC";
             DataTable dt = db.SelectDb(sql).Tables[0];
@@ -308,6 +308,10 @@ ORDER BY Mail.Email DESC";
                 else if (dr["Category"].ToString() == "News")
                 {
                     cat = "News";
+                } 
+                else if (dr["Category"].ToString() == "Wellness")
+                {
+                    cat = "Wellness";
                 }
                 string mail = dr["Email"].ToString() == "" ? "0" : dr["Email"].ToString();
                 var item = new CallToActionsModel();
@@ -331,22 +335,24 @@ ORDER BY Mail.Email DESC";
             {
                 if (data.day == 0 && data.category == "0")
                 {
-                    sql = $@"Select        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module as Category ,Book.DateCreated
-                            FROM            (SELECT        Business, COUNT(*) AS Email,DateCreated
-                            FROM            tbl_audittrailModel
-                            WHERE        (Module = 'Mail')
-                            GROUP BY Business,DateCreated) AS Mail LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*) AS Call,DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Call')
-                            GROUP BY Business,DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
-                            (SELECT        Business, COUNT(*)AS Book , DateCreated
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1
-                            WHERE        (Module = 'Book') 
-                            GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
-                            (SELECT        Business, Module
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1  where  Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
-                            GROUP BY Business, Module) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
+                    sql = $@"SELECT        Mail.Business, Mail.Email, Call.Call, Book.Book, Category.Module AS Category, Book.DateCreated
+                          FROM            (SELECT   Business, COUNT(*) AS Email, DateCreated
+                          FROM            tbl_audittrailModel
+                          WHERE        (Module = 'Mail')
+                          GROUP BY Business, DateCreated) AS Mail LEFT OUTER JOIN
+                          (SELECT        Business, COUNT(*) AS Call, DateCreated
+                               FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                               WHERE        (Module = 'Call')
+                               GROUP BY Business, DateCreated) AS Call ON Mail.Business = Call.Business LEFT OUTER JOIN
+                             (SELECT        Business, COUNT(*) AS Book, DateCreated
+                               FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                               WHERE        (Module = 'Book')
+                               GROUP BY Business, DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
+                             (SELECT        Business, Module
+                               FROM            tbl_audittrailModel AS tbl_audittrailModel_1
+                               WHERE       Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' or Module='Wellness'
+                               GROUP BY Business, Module) AS Category ON Book.Business = Category.Business
+ORDER BY Mail.Email DESC";
                 }
                 else if(data.day == 0 && data.category != "0" )
                 {
@@ -364,7 +370,7 @@ ORDER BY Mail.Email DESC";
                             WHERE        (Module = 'Book') 
                             GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN
                             (SELECT        Business, Module
-                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1  where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
+                            FROM            tbl_audittrailModel AS tbl_audittrailModel_1  where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health' or Module='Wellness' or Module='Shops & Services'  or Module='Shops & Services' or Module='News' 
                             GROUP BY Business, Module) AS Category ON Book.Business = Category.Business where Category.Module = '" +data.category+"' order by Mail.Email desc ";
                 }
                 else if (data.day != 0 && data.category == "0" )
@@ -382,7 +388,7 @@ ORDER BY Mail.Email DESC";
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Book') and DateCreated >= DATEADD(day,-"+day+", GETDATE()) " +
                             "GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN (SELECT        Business, Module " +
-                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News' " +
+                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health' or Module='Wellness' or Module='Shops & Services'  or Module='Shops & Services' or Module='News' " +
                             " GROUP BY Business, Module) AS Category ON Book.Business = Category.Business order by Mail.Email desc ";
                 }
                 else
@@ -400,7 +406,7 @@ ORDER BY Mail.Email DESC";
                             FROM            tbl_audittrailModel AS tbl_audittrailModel_1
                             WHERE        (Module = 'Book') and DateCreated >= DATEADD(day,-" + day + ", GETDATE()) " +
                             "GROUP BY Business,DateCreated) AS Book ON Call.Business = Book.Business LEFT OUTER JOIN (SELECT        Business, Module " +
-                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Shops & Services'  or Module='Shops & Services' or Module='News'  " +
+                            "FROM            tbl_audittrailModel AS tbl_audittrailModel_1 where Module='Hotel' or Module='Food & Beverage'  or Module='Access to co-working spaces'  or Module='Health'  or Module='Wellness' or Module='Shops & Services'  or Module='Shops & Services' or Module='News'  " +
                             " GROUP BY Business, Module) AS Category ON Book.Business = Category.Business  where Category.Module = '"+data.category+"' order by Mail.Email desc ";
                 }
                 
@@ -410,11 +416,38 @@ ORDER BY Mail.Email DESC";
             {
                 foreach (DataRow dr in dt.Rows)
                 {
-
+                        string cat = "";
                     string call = dr["Call"].ToString() == "" ? "0" : dr["Call"].ToString();
                     string book = dr["Book"].ToString() == "" ? "0" : dr["Book"].ToString();
-                    string cat = dr["Category"].ToString() == "" ? "" : dr["Category"].ToString() == "Food & Beverage" ? "Restaurant" : dr["Category"].ToString() == "Hotel" ? "Hotel" : "";
-                    string mail = dr["Email"].ToString() == "" ? "0" : dr["Email"].ToString();
+                        if (dr["Category"].ToString() == "Food & Beverage")
+                        {
+                            cat = "Restaurant";
+                        }
+                        else if (dr["Category"].ToString() == "Hotel")
+                        {
+                            cat = "Hotel";
+                        }
+                        else if (dr["Category"].ToString() == "Access to co-working spaces")
+                        {
+                            cat = "Access to co-working spaces";
+                        }
+                        else if (dr["Category"].ToString() == "Health")
+                        {
+                            cat = "Health";
+                        }
+                        else if (dr["Category"].ToString() == "Shops & Services")
+                        {
+                            cat = "Shops & Services";
+                        }
+                        else if (dr["Category"].ToString() == "News")
+                        {
+                            cat = "News";
+                        }
+                        else if (dr["Category"].ToString() == "Wellness")
+                        {
+                            cat = "Wellness";
+                        }
+                        string mail = dr["Email"].ToString() == "" ? "0" : dr["Email"].ToString();
                     var item = new CallToActionsModel();
                     item.Business = dr["Business"].ToString();
                     item.Category = cat;
@@ -437,6 +470,43 @@ ORDER BY Mail.Email DESC";
                 return BadRequest("ERROR");
     }
 }
+        public class SupportID
+        {
+
+            public string Id { get; set; }
+            public string status { get; set; }
+        }
+        public class Registerstats
+        {
+            public string Status { get; set; }
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> UpdateSupportStatus(SupportID data)
+        {
+
+            string sql = $@"select * from tbl_SupportModel where Id='" + data.Id + "'";
+            DataTable dt = db.SelectDb(sql).Tables[0];
+            var result = new Registerstats();
+            if (dt.Rows.Count > 0)
+            {
+                string query = $@"update  tbl_SupportModel set Status='"+data.status+ "' where Id='" + data.Id + "'";
+                db.AUIDB_WithParam(query);
+                result.Status = "Successfully Updated";
+                return Ok(result);
+
+            }
+            else
+            {
+                result.Status = "Error";
+
+                return BadRequest(result);
+
+            }
+
+
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetCountAllUserlist()
         {
@@ -494,7 +564,7 @@ ORDER BY Mail.Email DESC";
         {
             GlobalVariables gv = new GlobalVariables();
 
-            string sql = $@"SELECT        tbl_SupportModel.Id, tbl_SupportModel.Message, tbl_SupportModel.DateCreated, tbl_SupportModel.EmployeeID, CONCAT(UsersModel.Fname, ' ', UsersModel.Lname)  AS Fullname, tbl_StatusModel.Name AS Status
+            string sql = $@"SELECT        tbl_SupportModel.Id, tbl_SupportModel.Message, tbl_SupportModel.DateCreated, tbl_SupportModel.EmployeeID, tbl_SupportModel.Status as StatusID,CONCAT(UsersModel.Fname, ' ', UsersModel.Lname)  AS Fullname, tbl_StatusModel.Name AS Status
                          FROM            tbl_SupportModel INNER JOIN
                                                  UsersModel ON tbl_SupportModel.EmployeeID = UsersModel.EmployeeID INNER JOIN
                                                  tbl_StatusModel ON tbl_SupportModel.Status = tbl_StatusModel.Id order by id desc";
@@ -509,6 +579,7 @@ ORDER BY Mail.Email DESC";
                 item.Fullname = dr["Fullname"].ToString();
                 item.EmployeeID = dr["EmployeeID"].ToString();
                 item.Status = dr["Status"].ToString();
+                item.StatusID = dr["StatusID"].ToString();
                 item.DateCreated = DateTime.Parse(dr["DateCreated"].ToString()).ToString("MM/dd/yyyy hh:mm:ss tt");
                 result.Add(item);
             }
@@ -1121,6 +1192,7 @@ ORDER BY Mail.Email DESC";
             public string EmployeeID { get; set; }
             public string Fullname { get; set; }
             public string Status { get; set; }
+            public string StatusID { get; set; }
             public string DateCreated { get; set; }
 
         }
